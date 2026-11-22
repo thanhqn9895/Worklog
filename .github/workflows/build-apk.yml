@@ -35,6 +35,20 @@ jobs:
           cp index.html /tmp/app/app/src/main/assets/index.html
 
           cat << 'EOF' > /tmp/app/settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
           rootProject.name = "WorkLogGCal"
           include ':app'
           EOF
