@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://www.googleapis.com https://accounts.google.com; frame-src https://calendar.google.com; img-src 'self' data: https:;" />
 <meta name="theme-color" content="#0F766E" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="application-name" content="WorkLog & GCal" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230F766E'/%3E%3Crect x='112' y='128' width='288' height='272' rx='36' fill='%23FFFFFF'/%3E%3Crect x='112' y='128' width='288' height='72' rx='24' fill='%23CCFBF1'/%3E%3Cpath d='M218 318l-46-46 22-22 24 24 76-76 22 22z' fill='%230F766E'/%3E%3C/svg%3E" />
-<title>WorkLog &amp; GCal — Lê Bá Thành (qn000272)</title>
+<title>WorkLog &amp; GCal — Quản Lý Chấm Công &amp; Nghỉ Phép</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
@@ -62,6 +63,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
   }
   .brand-icon {
     width: 38px;
@@ -83,6 +85,9 @@
     margin: 2px 0 0;
     font-size: 11.5px;
     opacity: 0.92;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .emp-chip {
     background: rgba(255,255,255,0.16);
@@ -93,6 +98,7 @@
     font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
+    flex-shrink: 0;
   }
   .container {
     max-width: 1120px;
@@ -299,6 +305,9 @@
     font-size: 12.5px;
     font-weight: 700;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .cal-grid {
     display: grid;
@@ -395,7 +404,7 @@
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.55);
+    background: rgba(15, 23, 42, 0.6);
     display: none;
     align-items: flex-end;
     justify-content: center;
@@ -410,11 +419,11 @@
     max-width: 500px;
     border-radius: 20px;
     padding: 18px;
-    max-height: 90vh;
+    max-height: 92vh;
     overflow-y: auto;
     box-shadow: 0 20px 40px rgba(0,0,0,0.22);
   }
-  .modal h3 { margin: 0 0 12px; font-size: 17px; }
+  .modal h3 { margin: 0 0 10px; font-size: 17px; }
   .form-group { margin-bottom: 11px; }
   .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); }
   .form-control {
@@ -424,6 +433,10 @@
     border-radius: 10px;
     font-size: 14px;
     font-family: inherit;
+  }
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
   }
   .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .chip-group { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
@@ -471,6 +484,12 @@
     box-shadow: 0 6px 18px rgba(0,0,0,0.22);
     display: none;
   }
+  .empty-state {
+    text-align: center;
+    padding: 20px 12px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -488,12 +507,12 @@
           <path d="M9 16l2 2 4-4"></path>
         </svg>
       </div>
-      <div>
+      <div style="min-width:0;">
         <h1>WorkLog &amp; GCal</h1>
-        <p>EVA Quảng Ninh • Bộ phận Lắp ráp</p>
+        <p id="headerCompany">Chưa thiết lập công ty</p>
       </div>
     </div>
-    <div class="emp-chip" onclick="editQuota()">Lê Bá Thành • qn000272</div>
+    <div class="emp-chip" id="headerEmpChip" onclick="openProfileModal(false)">Thiết lập hồ sơ</div>
   </div>
 </header>
 
@@ -507,7 +526,7 @@
 
   <nav class="tabs">
     <button class="tab-btn active" data-tab="calendar" onclick="switchTab('calendar', this)">Lịch Chấm Công</button>
-    <button class="tab-btn" data-tab="leavecard" onclick="switchTab('leavecard', this)">Thẻ Xin Nghỉ 2026</button>
+    <button class="tab-btn" data-tab="leavecard" onclick="switchTab('leavecard', this)">Thẻ Xin Nghỉ</button>
     <button class="tab-btn" data-tab="records" onclick="switchTab('records', this)">Chi Tiết &amp; Báo Cáo</button>
     <button class="tab-btn" data-tab="gcal" onclick="switchTab('gcal', this)">Đồng Bộ Google</button>
   </nav>
@@ -516,24 +535,16 @@
     <div class="cal-header">
       <div class="month-nav">
         <button class="icon-btn" onclick="changeMonth(-1)">&#9664;</button>
-        <div class="month-title" id="monthTitle">Tháng 11/2026</div>
+        <div class="month-title" id="monthTitle">Tháng --/----</div>
         <button class="icon-btn" onclick="changeMonth(1)">&#9654;</button>
-        <button class="icon-btn" onclick="goToMonth(2026, 10)">T11/2026</button>
+        <button class="icon-btn" onclick="goToToday()">Hôm nay</button>
       </div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
         <button class="btn-outline" onclick="openBulkModal()">Điền ngày trống (Về 17h)</button>
       </div>
     </div>
 
-    <div class="quick-months">
-      <span class="qm-label">Tháng có nghỉ phép 2026:</span>
-      <button class="qm-btn" onclick="goToMonth(2026, 1)">T2 (1d)</button>
-      <button class="qm-btn" onclick="goToMonth(2026, 4)">T5 (2d)</button>
-      <button class="qm-btn" onclick="goToMonth(2026, 6)">T7 (1d)</button>
-      <button class="qm-btn" onclick="goToMonth(2026, 7)">T8 (1d)</button>
-      <button class="qm-btn" onclick="goToMonth(2026, 9)">T10 (1d)</button>
-      <button class="qm-btn" onclick="goToMonth(2026, 10)">T11 (3d)</button>
-    </div>
+    <div class="quick-months" id="quickMonthsBar"></div>
 
     <div class="filter-bar">
       <button class="pill active" onclick="setFilter('all', this)">Tất cả</button>
@@ -550,12 +561,10 @@
   <section id="tab-leavecard" class="card hidden">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
       <div>
-        <h3 style="margin:0; font-size:16px;">Thẻ Xin Nghỉ Năm 2026 — EVA Quảng Ninh</h3>
-        <p style="margin:3px 0 0; font-size:12px; color:var(--text-muted);">
-          Họ tên: <strong>Lê Bá Thành</strong> | Số thẻ: <strong>qn000272</strong> | Bộ phận: <strong>Lắp ráp</strong> | Ngày vào: <strong>6/8/2024</strong>
-        </p>
+        <h3 style="margin:0; font-size:16px;" id="leaveCardTitle">Thẻ Xin Nghỉ Năm</h3>
+        <p style="margin:3px 0 0; font-size:12px; color:var(--text-muted);" id="leaveCardSubtitle"></p>
       </div>
-      <button class="btn-outline" onclick="editQuota()">Sửa quỹ phép (<span id="quotaBadge">12</span> ngày)</button>
+      <button class="btn-outline" onclick="openProfileModal(false)">Sửa hồ sơ &amp; quỹ phép (<span id="quotaBadge">12</span> ngày)</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -565,7 +574,7 @@
             <th>Loại nghỉ</th>
             <th>Ngày nghỉ</th>
             <th>Thời gian</th>
-            <th>Nguồn xác nhận</th>
+            <th>Ghi chú / Trạng thái</th>
           </tr>
         </thead>
         <tbody id="leaveCardBody"></tbody>
@@ -606,27 +615,24 @@
     </div>
   </section>
 
-  <!-- TAB 4: GOOGLE ACCOUNT & CALENDAR SYNC -->
   <section id="tab-gcal" class="card hidden">
     <h3 style="margin:0 0 10px; font-size:16px;">Đồng Bộ Online Theo Tài Khoản Google</h3>
 
-    <!-- Method A: Direct Google Calendar App (Works Offline/Local Immediately) -->
     <div class="sync-box">
       <h4>1. Đồng bộ tức thì qua App Google Calendar trên Android (Không cần cấu hình)</h4>
       <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 8px;">
-        Khi bạn bấm <strong>"Lưu &amp; Mở Google Calendar"</strong> ở bất kỳ ngày nào, ứng dụng Google Calendar trên điện thoại (đã đăng nhập tài khoản Google của bạn) sẽ tự động mở và lưu sự kiện lên mây Google.
+        Khi bạn bấm <strong>"Lưu &amp; Mở Google Calendar"</strong> ở bất kỳ ngày nào, ứng dụng Google Calendar trên điện thoại sẽ tự động mở và lưu sự kiện lên tài khoản Google của bạn.
       </p>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn-primary" onclick="exportICS('month')">Xuất tệp .ICS Tháng Đang Xem</button>
-        <button class="btn-outline" onclick="exportICS('year')">Xuất tệp .ICS Cả Năm 2026</button>
+        <button class="btn-outline" onclick="exportICS('year')">Xuất tệp .ICS Cả Năm</button>
       </div>
     </div>
 
-    <!-- Method B: 2-Way Google Calendar API Sync -->
     <div class="sync-box" style="background:#EFF6FF; border-color:#BFDBFE;">
       <h4 style="color:#1E3A8A;">2. Đồng bộ online 2 chiều tự động (Google Calendar API)</h4>
       <p style="font-size:12.5px; color:#1E40AF; margin:0 0 10px;">
-        Kết nối trực tiếp với tài khoản Google để đẩy toàn bộ dữ liệu chấm công lên Lịch Google (<code>WorkLog EVA</code>) hoặc tải dữ liệu từ Lịch Google về máy mới khi đổi điện thoại. <em>(Yêu cầu mở ứng dụng qua đường dẫn <code>https://</code> như Netlify Drop / GitHub Pages).</em>
+        Kết nối trực tiếp với tài khoản Google để đẩy toàn bộ dữ liệu chấm công lên Lịch Google hoặc khôi phục dữ liệu về máy mới. <em>(Yêu cầu mở ứng dụng qua <code>https://</code>).</em>
       </p>
       <div class="form-group">
         <label style="color:#1E3A8A;">Google OAuth Client ID (Web Application)</label>
@@ -642,7 +648,6 @@
       </div>
     </div>
 
-    <!-- Method C: Embed Live Google Calendar -->
     <div class="sync-box">
       <h4>3. Xem trực tiếp Lịch Google cá nhân ngay trong ứng dụng</h4>
       <div class="form-group" style="margin-bottom:8px;">
@@ -655,6 +660,48 @@
 
 <button class="fab" onclick="openEntryModal(null)">+ Ghi chấm công</button>
 <div class="toast" id="toastBox"></div>
+
+<!-- ONBOARDING / PROFILE SETUP MODAL -->
+<div class="modal-backdrop" id="profileModal">
+  <div class="modal">
+    <h3 id="profileModalTitle">Thiết Lập Hồ Sơ Nhân Viên</h3>
+    <p id="profileModalDesc" style="font-size:12.5px; color:var(--text-muted); margin-top:0;">
+      Nhập thông tin của bạn để cá nhân hóa bảng chấm công, thẻ xin nghỉ và đồng bộ Google Calendar. Dữ liệu chỉ lưu cục bộ trên thiết bị của bạn.
+    </p>
+    <div class="form-group">
+      <label>Họ và tên <span style="color:#DC2626;">*</span></label>
+      <input type="text" id="pFullName" class="form-control" placeholder="VD: Nguyễn Văn A" maxlength="80" />
+    </div>
+    <div class="row-2">
+      <div class="form-group">
+        <label>Mã nhân viên <span style="color:#DC2626;">*</span></label>
+        <input type="text" id="pEmpId" class="form-control" placeholder="VD: NV001234" maxlength="40" />
+      </div>
+      <div class="form-group">
+        <label>Quỹ phép năm (ngày)</label>
+        <input type="number" step="0.5" min="0" max="60" id="pQuota" class="form-control" value="12" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Tên công ty <span style="color:#DC2626;">*</span></label>
+      <input type="text" id="pCompany" class="form-control" placeholder="VD: Công ty TNHH ABC" maxlength="100" />
+    </div>
+    <div class="form-group">
+      <label>Bộ phận / Xưởng (tùy chọn)</label>
+      <input type="text" id="pDepartment" class="form-control" placeholder="VD: Bộ phận Lắp ráp" maxlength="80" />
+    </div>
+    <div class="modal-actions" style="justify-content:space-between; align-items:center;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-primary" onclick="saveProfile()">Lưu &amp; Bắt đầu sử dụng</button>
+        <button class="icon-btn hidden" id="btnCloseProfile" onclick="closeModal('profileModal')">Đóng</button>
+      </div>
+      <label class="btn-outline" style="cursor:pointer; font-size:11.5px; padding:6px 10px;">
+        Nạp tệp sao lưu (.json)
+        <input type="file" accept=".json" style="display:none" onchange="importJSON(event)" />
+      </label>
+    </div>
+  </div>
+</div>
 
 <!-- ENTRY MODAL -->
 <div class="modal-backdrop" id="entryModal">
@@ -691,7 +738,7 @@
     <div class="row-2">
       <div class="form-group">
         <label>Số giờ ghi nhận</label>
-        <input type="number" step="0.5" id="fHours" class="form-control" value="8" />
+        <input type="number" step="0.5" min="0" max="24" id="fHours" class="form-control" value="8" />
       </div>
       <div class="form-group">
         <label>Hệ số lương (%)</label>
@@ -705,11 +752,11 @@
     </div>
     <div class="form-group">
       <label>Ghi chú</label>
-      <input type="text" id="fNote" class="form-control" placeholder="Nhập ghi chú..." />
+      <input type="text" id="fNote" class="form-control" placeholder="Nhập ghi chú..." maxlength="200" />
       <div class="chip-group">
         <span class="note-chip" onclick="setNote('Làm hành chính về 17h')">Về 17h</span>
         <span class="note-chip" onclick="setNote('Không tăng ca (tan ca 17:00)')">Không tăng ca</span>
-        <span class="note-chip" onclick="setNote('Tăng ca xưởng Lắp ráp')">Tăng ca Lắp ráp</span>
+        <span class="note-chip" onclick="setNote('Tăng ca xưởng')">Tăng ca xưởng</span>
         <span class="note-chip" onclick="setNote('Đi làm full')">Đi làm full</span>
         <span class="note-chip" onclick="setNote('Nghỉ phép năm')">Nghỉ phép năm</span>
       </div>
@@ -732,7 +779,7 @@
     <div class="form-group">
       <label>Phạm vi điền</label>
       <select id="bulkScope" class="form-control">
-        <option value="toToday">Từ đầu tháng đến ngày hôm nay (22/11/2026)</option>
+        <option value="toToday" id="bulkTodayOpt">Từ đầu tháng đến ngày hôm nay</option>
         <option value="fullMonth">Toàn bộ các ngày T2–T7 trống trong tháng</option>
       </select>
     </div>
@@ -752,49 +799,11 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'worklog_eva_qn000272_v1';
-const QUOTA_KEY = 'worklog_eva_quota_2026';
-const GCFG_KEY = 'worklog_eva_gcfg_2026';
+const STORAGE_KEY = 'worklog_entries_clean_v1';
+const PROFILE_KEY = 'worklog_user_profile_v1';
+const GCFG_KEY    = 'worklog_gcfg_clean_v1';
 
-const INITIAL_ENTRIES = [
-  { id: 'lv-1', date: '2026-02-27', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 1 - Đã duyệt)', onPaperCard: true, stt: 1 },
-  { id: 'lv-2', date: '2026-05-13', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 5 - Đã duyệt)', onPaperCard: true, stt: 5 },
-  { id: 'lv-3', date: '2026-05-16', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 2 - Đã duyệt)', onPaperCard: true, stt: 2 },
-  { id: 'lv-4', date: '2026-07-18', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 3 - Đã duyệt)', onPaperCard: true, stt: 3 },
-  { id: 'lv-5', date: '2026-08-01', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 4 - Đã duyệt)', onPaperCard: true, stt: 4 },
-  { id: 'lv-6', date: '2026-10-31', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 6 - Đã duyệt)', onPaperCard: true, stt: 6 },
-  { id: 'lv-7', date: '2026-11-05', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 7 - Đã duyệt)', onPaperCard: true, stt: 7 },
-  { id: 'lv-8', date: '2026-11-13', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 8 - Đã duyệt)', onPaperCard: true, stt: 8 },
-  { id: 'lv-9', date: '2026-11-20', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Nghỉ phép (Ngày Nhà giáo VN - Ghi trên lịch điện thoại)', onPaperCard: false, stt: 9 },
-
-  { id: 'sun-1', date: '2026-11-01', type: 'sunday', start: '08:00', end: '17:00', hours: 8, mult: 200, note: 'Đi làm full Chủ nhật' },
-
-  { id: 'ot-02', date: '2026-11-02', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
-  { id: 'ot-03', date: '2026-11-03', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
-  { id: 'ot-04', date: '2026-11-04', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
-  { id: 'ot-09', date: '2026-11-09', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-10', date: '2026-11-10', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-11', date: '2026-11-11', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-12', date: '2026-11-12', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-14', date: '2026-11-14', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-16', date: '2026-11-16', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-17', date: '2026-11-17', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-18', date: '2026-11-18', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-19', date: '2026-11-19', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
-  { id: 'ot-21', date: '2026-11-21', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
-
-  { id: 'reg-06', date: '2026-11-06', type: 'regular', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Làm hành chính về 17h (Không tăng ca)' },
-  { id: 'reg-07', date: '2026-11-07', type: 'regular', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Làm hành chính về 17h (Không tăng ca)' }
-];
-
-let entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || INITIAL_ENTRIES;
-let annualQuota = Number(localStorage.getItem(QUOTA_KEY) || 12);
-let gCfg = JSON.parse(localStorage.getItem(GCFG_KEY) || '{"clientId":"","embedUrl":""}');
-let googleAccessToken = null;
-let viewYear = 2026;
-let viewMonth = 10;
-let activeFilter = 'all';
-
+const ALLOWED_TYPES = ['regular', 'ot', 'leave', 'sunday', 'welfare'];
 const TYPE_META = {
   leave:   { label: 'Nghỉ phép',      tag: '[Nghỉ phép]',      cls: 'ev-leave' },
   ot:      { label: 'Tăng ca OT',     tag: '[Tăng ca OT]',     cls: 'ev-ot' },
@@ -803,25 +812,132 @@ const TYPE_META = {
   regular: { label: 'Hành chính 17h', tag: '[Hành chính 17h]', cls: 'ev-regular' }
 };
 
-function initEnvironmentBanner() {
-  const banner = document.getElementById('modeBannerText');
-  if (location.protocol === 'content:' || location.protocol === 'file:') {
-    banner.innerHTML = '<strong>Đang mở từ tệp tải về:</strong> Chrome ẩn nút <em>Thêm vào màn hình chính</em> với tệp nội bộ. Hãy bấm <strong>&#8942; &rarr; Dấu trang (&#9733;)</strong> để ghim tiện ích ra màn hình chính, hoặc mở qua link <code>https://</code>.';
-  } else {
-    banner.innerHTML = '<strong>Chế độ Web App (HTTPS):</strong> Bạn có thể bấm <strong>&#8942; &rarr; Cài đặt ứng dụng / Thêm vào màn hình chính</strong> và kết nối tài khoản Google ở tab <em>Đồng Bộ Google</em>.';
-  }
-  document.getElementById('gClientId').value = gCfg.clientId || '';
-  document.getElementById('gEmbedUrl').value = gCfg.embedUrl || '';
-  renderEmbedIframe();
+function getTodayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function escapeHTML(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeFileName(name) {
+  return String(name || 'export.txt').replace(/[^a-zA-Z0-9._-]/g, '_');
+}
+
+let userProfile = null;
+try {
+  userProfile = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
+} catch (_) { userProfile = null; }
+
+let entries = [];
+try {
+  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  entries = Array.isArray(raw) ? raw.filter(isValidEntry) : [];
+} catch (_) { entries = []; }
+
+let gCfg = { clientId: '', embedUrl: '' };
+try {
+  const parsedCfg = JSON.parse(localStorage.getItem(GCFG_KEY) || '{}');
+  gCfg.clientId = String(parsedCfg.clientId || '');
+  gCfg.embedUrl = String(parsedCfg.embedUrl || '');
+} catch (_) {}
+
+let googleAccessToken = null;
+const nowDate = new Date();
+let viewYear = nowDate.getFullYear();
+let viewMonth = nowDate.getMonth();
+let activeFilter = 'all';
+let isFirstSetup = false;
+
+function isValidEntry(e) {
+  return e && typeof e === 'object'
+    && ALLOWED_TYPES.includes(e.type)
+    && /^\d{4}-\d{2}-\d{2}$/.test(String(e.date || ''))
+    && Number.isFinite(Number(e.hours))
+    && Number.isFinite(Number(e.mult));
 }
 
 function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  localStorage.setItem(QUOTA_KEY, String(annualQuota));
+  if (userProfile) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(userProfile));
+  }
+}
+
+function getQuota() {
+  return userProfile && Number.isFinite(Number(userProfile.annualQuota))
+    ? Number(userProfile.annualQuota)
+    : 12;
+}
+
+function initEnvironmentBanner() {
+  const banner = document.getElementById('modeBannerText');
+  if (location.protocol === 'content:' || location.protocol === 'file:') {
+    banner.innerHTML = '<strong>Chế độ ứng dụng cục bộ:</strong> Toàn bộ dữ liệu chấm công lưu trực tiếp trên điện thoại của bạn. Dùng nút <strong>Lưu &amp; Mở Google Calendar</strong> để đẩy lên Lịch Google.';
+  } else {
+    banner.innerHTML = '<strong>Chế độ Web App (HTTPS):</strong> Bạn có thể bấm <strong>&#8942; &rarr; Thêm vào màn hình chính</strong> và kết nối tài khoản Google ở tab <em>Đồng Bộ Google</em>.';
+  }
+  document.getElementById('gClientId').value = gCfg.clientId;
+  document.getElementById('gEmbedUrl').value = gCfg.embedUrl;
+  renderEmbedIframe();
+}
+
+function openProfileModal(mandatory) {
+  isFirstSetup = !!mandatory;
+  document.getElementById('profileModalTitle').textContent = mandatory
+    ? 'Chào mừng! Thiết Lập Hồ Sơ Lần Đầu'
+    : 'Chỉnh Sửa Hồ Sơ Nhân Viên';
+  document.getElementById('btnCloseProfile').classList.toggle('hidden', mandatory);
+
+  if (userProfile) {
+    document.getElementById('pFullName').value = userProfile.fullName || '';
+    document.getElementById('pEmpId').value = userProfile.empId || '';
+    document.getElementById('pCompany').value = userProfile.companyName || '';
+    document.getElementById('pDepartment').value = userProfile.department || '';
+    document.getElementById('pQuota').value = getQuota();
+  }
+  document.getElementById('profileModal').classList.add('open');
+}
+
+function saveProfile() {
+  const fullName = document.getElementById('pFullName').value.trim();
+  const empId = document.getElementById('pEmpId').value.trim();
+  const companyName = document.getElementById('pCompany').value.trim();
+  const department = document.getElementById('pDepartment').value.trim();
+  const qVal = parseFloat(document.getElementById('pQuota').value);
+  const annualQuota = Number.isFinite(qVal) && qVal >= 0 ? qVal : 12;
+
+  if (!fullName || !empId || !companyName) {
+    alert('Vui lòng nhập đầy đủ Họ tên, Mã nhân viên và Tên công ty.');
+    return;
+  }
+
+  userProfile = { fullName, empId, companyName, department, annualQuota };
+  isFirstSetup = false;
+  persist();
+  closeModal('profileModal');
+  renderAll();
+  notify('Đã lưu hồ sơ nhân viên');
+}
+
+function renderProfileHeader() {
+  const p = userProfile || { fullName: 'Chưa thiết lập', empId: '---', companyName: 'Chưa thiết lập công ty', department: '' };
+  const subText = p.department ? `${p.companyName} • ${p.department}` : p.companyName;
+  document.getElementById('headerCompany').textContent = subText;
+  document.getElementById('headerEmpChip').textContent = `${p.fullName} • ${p.empId}`;
+  document.title = `WorkLog & GCal — ${p.fullName} (${p.empId})`;
 }
 
 function renderAll() {
+  renderProfileHeader();
   renderKPI();
+  renderQuickMonths();
   renderCalendar();
   renderLeaveCard();
   renderRecordsTable();
@@ -830,22 +946,23 @@ function renderAll() {
 function renderKPI() {
   const ym = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
   const yearStr = `${viewYear}-`;
+  const quota = getQuota();
 
   const yearLeaves = entries.filter(e => e.type === 'leave' && e.date.startsWith(yearStr));
-  const usedLeaveDays = yearLeaves.reduce((s, e) => s + (e.hours / 8), 0);
-  const remainLeave = Math.max(0, annualQuota - usedLeaveDays);
-  const pct = Math.min(100, Math.round((usedLeaveDays / Math.max(1, annualQuota)) * 100));
+  const usedLeaveDays = yearLeaves.reduce((s, e) => s + (Number(e.hours) / 8), 0);
+  const remainLeave = Math.max(0, quota - usedLeaveDays);
+  const pct = Math.min(100, Math.round((usedLeaveDays / Math.max(1, quota)) * 100));
 
   const monthOT = entries.filter(e => e.type === 'ot' && e.date.startsWith(ym));
   const otHours = monthOT.reduce((s, e) => s + Number(e.hours), 0);
   const otWeighted = monthOT.reduce((s, e) => s + Number(e.hours) * (Number(e.mult) / 100), 0);
 
   const monthSun = entries.filter(e => e.type === 'sunday' && e.date.startsWith(ym));
-  const sunDays = monthSun.reduce((s, e) => s + (e.hours / 8), 0);
+  const sunDays = monthSun.reduce((s, e) => s + (Number(e.hours) / 8), 0);
   const sunHours = monthSun.reduce((s, e) => s + Number(e.hours), 0);
 
   const monthWel = entries.filter(e => e.type === 'welfare' && e.date.startsWith(ym));
-  const welDays = monthWel.reduce((s, e) => s + (e.hours / 8), 0);
+  const welDays = monthWel.reduce((s, e) => s + (Number(e.hours) / 8), 0);
 
   const monthReg = entries.filter(e => e.type === 'regular' && e.date.startsWith(ym));
   const regDays = monthReg.length;
@@ -854,8 +971,8 @@ function renderKPI() {
   document.getElementById('kpiGrid').innerHTML = `
     <div class="kpi-card full-span">
       <span class="kpi-badge" style="background:var(--leave-bg); color:var(--leave);">Phép Tồn ${viewYear}</span>
-      <div class="kpi-val" style="color:var(--leave);">${remainLeave} <span style="font-size:13px;font-weight:600;">/ ${annualQuota} ngày</span></div>
-      <div class="kpi-sub">Đã nghỉ ${usedLeaveDays} ngày (8 trên thẻ + 1 lịch ĐT)</div>
+      <div class="kpi-val" style="color:var(--leave);">${remainLeave} <span style="font-size:13px;font-weight:600;">/ ${quota} ngày</span></div>
+      <div class="kpi-sub">Đã nghỉ ${usedLeaveDays} ngày trong năm ${viewYear}</div>
       <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
     </div>
     <div class="kpi-card">
@@ -881,6 +998,27 @@ function renderKPI() {
   `;
 }
 
+function renderQuickMonths() {
+  const bar = document.getElementById('quickMonthsBar');
+  const yearStr = `${viewYear}-`;
+  const leaves = entries.filter(e => e.type === 'leave' && e.date.startsWith(yearStr));
+  if (!leaves.length) {
+    bar.innerHTML = `<span class="qm-label">Chưa có ngày nghỉ phép nào được ghi nhận trong năm ${viewYear}.</span>`;
+    return;
+  }
+  const byMonth = {};
+  leaves.forEach(e => {
+    const m = parseInt(e.date.slice(5, 7), 10) - 1;
+    byMonth[m] = (byMonth[m] || 0) + (Number(e.hours) / 8);
+  });
+  const btns = Object.keys(byMonth)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map(m => `<button class="qm-btn" onclick="goToMonth(${viewYear}, ${m})">T${m + 1} (${byMonth[m]}d)</button>`)
+    .join('');
+  bar.innerHTML = `<span class="qm-label">Tháng có nghỉ phép ${viewYear}:</span>${btns}`;
+}
+
 function renderCalendar() {
   document.getElementById('monthTitle').textContent = `Tháng ${viewMonth + 1}/${viewYear}`;
   const grid = document.getElementById('calGrid');
@@ -894,6 +1032,7 @@ function renderCalendar() {
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
   const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+  const todayISO = getTodayISO();
 
   for (let i = 0; i < totalCells; i++) {
     let dayNum, m = viewMonth, y = viewYear, isOther = false;
@@ -913,7 +1052,7 @@ function renderCalendar() {
 
     const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
     const dow = i % 7;
-    const isToday = dateStr === '2026-11-22';
+    const isToday = dateStr === todayISO;
 
     const dayEntries = entries.filter(e => e.date === dateStr && (activeFilter === 'all' || e.type === activeFilter));
     const hasAnyEntry = entries.some(e => e.date === dateStr);
@@ -921,11 +1060,11 @@ function renderCalendar() {
     const tagsHtml = dayEntries.map(e => {
       const meta = TYPE_META[e.type];
       let shortTxt = meta.label;
-      if (e.type === 'ot') shortTxt = `OT +${e.hours}h`;
+      if (e.type === 'ot') shortTxt = `OT +${Number(e.hours)}h`;
       else if (e.type === 'regular') shortTxt = `Về 17h`;
       else if (e.type === 'sunday') shortTxt = `CN Full`;
       else if (e.type === 'leave') shortTxt = `Nghỉ phép`;
-      return `<div class="ev-tag ${meta.cls}">${shortTxt}</div>`;
+      return `<div class="ev-tag ${meta.cls}">${escapeHTML(shortTxt)}</div>`;
     }).join('');
 
     const quickBtn = (!isOther && dow !== 6 && !hasAnyEntry)
@@ -947,7 +1086,7 @@ function renderCalendar() {
 
 function quickAdd17h(dateStr) {
   entries.push({
-    id: 'reg-' + Date.now(),
+    id: 'reg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
     date: dateStr,
     type: 'regular',
     start: '08:00',
@@ -962,19 +1101,31 @@ function quickAdd17h(dateStr) {
 }
 
 function renderLeaveCard() {
-  document.getElementById('quotaBadge').textContent = annualQuota;
+  const p = userProfile || { fullName: '---', empId: '---', companyName: '---', department: '' };
+  document.getElementById('quotaBadge').textContent = getQuota();
+  document.getElementById('leaveCardTitle').textContent = `Thẻ Xin Nghỉ Năm ${viewYear} — ${p.companyName}`;
+
+  const subEl = document.getElementById('leaveCardSubtitle');
+  subEl.innerHTML = `Họ tên: <strong>${escapeHTML(p.fullName)}</strong> | Mã NV: <strong>${escapeHTML(p.empId)}</strong>`
+    + (p.department ? ` | Bộ phận: <strong>${escapeHTML(p.department)}</strong>` : '');
+
   const leaves = entries
-    .filter(e => e.type === 'leave' && e.date.startsWith('2026-'))
+    .filter(e => e.type === 'leave' && e.date.startsWith(`${viewYear}-`))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const tbody = document.getElementById('leaveCardBody');
+  if (!leaves.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Chưa có bản ghi nghỉ phép nào trong năm ${viewYear}.</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = leaves.map((e, idx) => `
     <tr>
       <td><strong>${idx + 1}</strong></td>
       <td><span class="ev-tag ev-leave" style="display:inline-block;">Phép năm</span></td>
-      <td><strong>${formatVNDate(e.date)}</strong></td>
-      <td>1 ngày (${e.hours} giờ) • ${e.start}–${e.end}</td>
-      <td>${e.onPaperCard !== false ? '<span style="color:#0F766E;font-weight:700;">&#10003; Đã ký trên thẻ giấy</span>' : '<span style="color:#D97706;font-weight:700;">&#9998; Ghi trên lịch ĐT (chưa lên thẻ)</span>'}</td>
+      <td><strong>${escapeHTML(formatVNDate(e.date))}</strong></td>
+      <td>${Number(e.hours) / 8} ngày (${Number(e.hours)} giờ) • ${escapeHTML(e.start)}–${escapeHTML(e.end)}</td>
+      <td>${escapeHTML(e.note || 'Nghỉ phép năm')}</td>
     </tr>
   `).join('');
 }
@@ -985,19 +1136,26 @@ function renderRecordsTable() {
     .filter(e => e.date.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || TYPE_META[e.type].label.toLowerCase().includes(q))
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  document.getElementById('recordsBody').innerHTML = list.map(e => {
+  const tbody = document.getElementById('recordsBody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Chưa có dữ liệu chấm công phù hợp. Bấm "+ Ghi chấm công" để thêm mới.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(e => {
     const m = TYPE_META[e.type];
+    const safeId = escapeHTML(e.id);
     return `
       <tr>
-        <td><strong>${formatVNDate(e.date)}</strong></td>
-        <td><span class="ev-tag ${m.cls}" style="display:inline-block;">${m.label}</span></td>
-        <td>${e.start} - ${e.end}</td>
-        <td>${e.hours}h</td>
-        <td>${e.mult}%</td>
-        <td>${e.note || ''}</td>
+        <td><strong>${escapeHTML(formatVNDate(e.date))}</strong></td>
+        <td><span class="ev-tag ${m.cls}" style="display:inline-block;">${escapeHTML(m.label)}</span></td>
+        <td>${escapeHTML(e.start)} - ${escapeHTML(e.end)}</td>
+        <td>${Number(e.hours)}h</td>
+        <td>${Number(e.mult)}%</td>
+        <td>${escapeHTML(e.note || '')}</td>
         <td>
-          <button class="icon-btn" style="padding:4px 8px;font-size:11px;" onclick="editEntry('${e.id}')">Sửa</button>
-          <button class="icon-btn" style="padding:4px 8px;font-size:11px;color:#DC2626;" onclick="deleteEntry('${e.id}')">Xóa</button>
+          <button class="icon-btn" style="padding:4px 8px;font-size:11px;" onclick="editEntry('${safeId}')">Sửa</button>
+          <button class="icon-btn" style="padding:4px 8px;font-size:11px;color:#DC2626;" onclick="deleteEntry('${safeId}')">Xóa</button>
         </td>
       </tr>
     `;
@@ -1005,7 +1163,8 @@ function renderRecordsTable() {
 }
 
 function openEntryModal(dateStr) {
-  const targetDate = dateStr || `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-22`;
+  const defaultDay = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-01`;
+  const targetDate = dateStr || getTodayISO() || defaultDay;
   document.getElementById('editId').value = '';
   document.getElementById('fDate').value = targetDate;
   document.getElementById('fType').value = 'regular';
@@ -1016,15 +1175,18 @@ function openEntryModal(dateStr) {
   const box = document.getElementById('existingList');
   if (dayItems.length) {
     box.innerHTML = `<div style="font-size:12px;font-weight:700;margin-bottom:4px;">Đã ghi trong ngày này:</div>` +
-      dayItems.map(item => `
-        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface-variant);padding:6px 10px;border-radius:8px;margin-bottom:4px;font-size:12px;">
-          <span><strong>${TYPE_META[item.type].label}</strong> (${item.hours}h) — ${item.note}</span>
-          <span>
-            <button class="icon-btn" style="padding:3px 7px;font-size:11px;" onclick="editEntry('${item.id}')">Sửa</button>
-            <button class="icon-btn" style="padding:3px 7px;font-size:11px;color:#DC2626;" onclick="deleteEntry('${item.id}')">Xóa</button>
-          </span>
-        </div>
-      `).join('');
+      dayItems.map(item => {
+        const safeId = escapeHTML(item.id);
+        return `
+          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface-variant);padding:6px 10px;border-radius:8px;margin-bottom:4px;font-size:12px;gap:6px;">
+            <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong>${escapeHTML(TYPE_META[item.type].label)}</strong> (${Number(item.hours)}h) — ${escapeHTML(item.note)}</span>
+            <span style="flex-shrink:0;">
+              <button class="icon-btn" style="padding:3px 7px;font-size:11px;" onclick="editEntry('${safeId}')">Sửa</button>
+              <button class="icon-btn" style="padding:3px 7px;font-size:11px;color:#DC2626;" onclick="deleteEntry('${safeId}')">Xóa</button>
+            </span>
+          </div>
+        `;
+      }).join('');
   } else {
     box.innerHTML = '';
   }
@@ -1102,11 +1264,11 @@ function saveEntry(openGCal) {
   const end = document.getElementById('fEnd').value || '17:00';
   const hours = parseFloat(document.getElementById('fHours').value) || 0;
   const mult = parseInt(document.getElementById('fMult').value, 10) || 100;
-  const note = document.getElementById('fNote').value.trim();
+  const note = document.getElementById('fNote').value.trim().slice(0, 200);
 
-  if (!date) return;
+  if (!date || !ALLOWED_TYPES.includes(type)) return;
 
-  const payload = { id: id || ('rec-' + Date.now()), date, type, start, end, hours, mult, note };
+  const payload = { id: id || ('rec-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6)), date, type, start, end, hours, mult, note };
   if (id) {
     const idx = entries.findIndex(x => x.id === id);
     if (idx >= 0) entries[idx] = { ...entries[idx], ...payload };
@@ -1125,20 +1287,23 @@ function saveEntry(openGCal) {
 
   if (openGCal) {
     const gcalUrl = buildGoogleCalendarUrl(payload);
-    if (window.AndroidBridge && window.AndroidBridge.openGoogleCalendar) {
-      window.AndroidBridge.openGoogleCalendar(gcalUrl);
-    } else {
-      window.open(gcalUrl, '_blank');
+    if (gcalUrl.startsWith('https://calendar.google.com/')) {
+      if (window.AndroidBridge && window.AndroidBridge.openGoogleCalendar) {
+        window.AndroidBridge.openGoogleCalendar(gcalUrl);
+      } else {
+        window.open(gcalUrl, '_blank', 'noopener,noreferrer');
+      }
     }
   }
 }
 
 function buildGoogleCalendarUrl(e) {
+  const p = userProfile || { fullName: '', empId: '', companyName: '' };
   const dClean = e.date.replace(/-/g, '');
   const sClean = e.start.replace(':', '') + '00';
   const eClean = e.end.replace(':', '') + '00';
   const title = `${TYPE_META[e.type].tag} ${e.note || TYPE_META[e.type].label} (${e.hours}h)`;
-  const details = `Nhân viên: Lê Bá Thành (qn000272 - EVA Quảng Ninh)\nPhân loại: ${TYPE_META[e.type].label}\nSố giờ: ${e.hours}h (Hệ số ${e.mult}%)\nGhi chú: ${e.note || ''}`;
+  const details = `Nhân viên: ${p.fullName} (${p.empId} - ${p.companyName})\nPhân loại: ${TYPE_META[e.type].label}\nSố giờ: ${e.hours}h (Hệ số ${e.mult}%)\nGhi chú: ${e.note || ''}`;
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dClean}T${sClean}/${dClean}T${eClean}&details=${encodeURIComponent(details)}&ctz=Asia/Ho_Chi_Minh`;
 }
 
@@ -1156,11 +1321,21 @@ function saveEmbedUrl() {
 
 function renderEmbedIframe() {
   const box = document.getElementById('embedContainer');
-  if (gCfg.embedUrl && gCfg.embedUrl.startsWith('https://calendar.google.com/')) {
-    box.innerHTML = `<iframe src="${gCfg.embedUrl}" style="border:0;width:100%;height:380px;border-radius:12px;" frameborder="0" scrolling="no"></iframe>`;
-  } else {
-    box.innerHTML = '';
-  }
+  box.innerHTML = '';
+  if (!gCfg.embedUrl) return;
+  try {
+    const parsed = new URL(gCfg.embedUrl);
+    if (parsed.protocol === 'https:' && parsed.hostname === 'calendar.google.com' && parsed.pathname.startsWith('/calendar/embed')) {
+      const iframe = document.createElement('iframe');
+      iframe.src = parsed.toString();
+      iframe.style.border = '0';
+      iframe.style.width = '100%';
+      iframe.style.height = '380px';
+      iframe.style.borderRadius = '12px';
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
+      box.appendChild(iframe);
+    }
+  } catch (_) {}
 }
 
 function connectGoogleAccount() {
@@ -1190,9 +1365,10 @@ function connectGoogleAccount() {
 
 async function pushSingleEventToGoogle(e) {
   if (!googleAccessToken) return;
+  const p = userProfile || { fullName: '', empId: '', companyName: '' };
   const eventBody = {
     summary: `${TYPE_META[e.type].tag} ${e.note || TYPE_META[e.type].label} (${e.hours}h)`,
-    description: `[WORKLOG_ID:${e.id}|TYPE:${e.type}|HOURS:${e.hours}|MULT:${e.mult}] NV: Lê Bá Thành (qn000272 - EVA Quảng Ninh)`,
+    description: `[WORKLOG_ID:${e.id}|TYPE:${e.type}|HOURS:${e.hours}|MULT:${e.mult}] NV: ${p.fullName} (${p.empId} - ${p.companyName})`,
     start: { dateTime: `${e.date}T${e.start}:00+07:00`, timeZone: 'Asia/Ho_Chi_Minh' },
     end:   { dateTime: `${e.date}T${e.end}:00+07:00`,   timeZone: 'Asia/Ho_Chi_Minh' }
   };
@@ -1233,22 +1409,23 @@ async function pullFromGoogle() {
     const items = data.items || [];
     let imported = 0;
     items.forEach(ev => {
-      const desc = ev.description || '';
-      const m = desc.match(/\[WORKLOG_ID:([^|]+)\|TYPE:([^|]+)\|HOURS:([^|]+)\|MULT:([^\]]+)\]/);
-      if (m && ev.start && ev.start.dateTime) {
+      const desc = String(ev.description || '');
+      const m = desc.match(/\[WORKLOG_ID:([a-zA-Z0-9_-]+)\|TYPE:([a-z]+)\|HOURS:([0-9.]+)\|MULT:(\d+)\]/);
+      if (m && ev.start && ev.start.dateTime && ALLOWED_TYPES.includes(m[2])) {
         const id = m[1];
-        if (!entries.some(x => x.id === id)) {
-          const dtStart = ev.start.dateTime;
-          const dtEnd = ev.end?.dateTime || dtStart;
+        const datePart = String(ev.start.dateTime).slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(datePart) && !entries.some(x => x.id === id)) {
+          const dtStart = String(ev.start.dateTime);
+          const dtEnd = String(ev.end?.dateTime || dtStart);
           entries.push({
             id,
-            date: dtStart.slice(0, 10),
+            date: datePart,
             type: m[2],
             start: dtStart.slice(11, 16),
             end: dtEnd.slice(11, 16),
-            hours: parseFloat(m[3]) || 8,
-            mult: parseInt(m[4], 10) || 100,
-            note: (ev.summary || '').replace(/^\[[^\]]+\]\s*/, '')
+            hours: Math.min(24, Math.max(0, parseFloat(m[3]) || 8)),
+            mult: Math.min(500, Math.max(0, parseInt(m[4], 10) || 100)),
+            note: String(ev.summary || '').replace(/^\[[^\]]+\]\s*/, '').slice(0, 200)
           });
           imported++;
         }
@@ -1264,6 +1441,8 @@ async function pullFromGoogle() {
 }
 
 function openBulkModal() {
+  const todayISO = getTodayISO();
+  document.getElementById('bulkTodayOpt').textContent = `Từ đầu tháng đến ngày hôm nay (${formatVNDate(todayISO)})`;
   document.getElementById('bulkModal').classList.add('open');
 }
 
@@ -1271,6 +1450,7 @@ function runBulkFill() {
   const scope = document.getElementById('bulkScope').value;
   const label = document.getElementById('bulkLabel').value;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const todayISO = getTodayISO();
   let added = 0;
 
   for (let d = 1; d <= daysInMonth; d++) {
@@ -1278,7 +1458,7 @@ function runBulkFill() {
     const dow = dt.getDay();
     if (dow === 0) continue;
     const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    if (scope === 'toToday' && dateStr > '2026-11-22') continue;
+    if (scope === 'toToday' && dateStr > todayISO) continue;
     if (!entries.some(e => e.date === dateStr)) {
       entries.push({
         id: `reg-bulk-${dateStr}-${Math.random().toString(36).slice(2,6)}`,
@@ -1299,15 +1479,6 @@ function runBulkFill() {
   notify(`Đã điền ${added} ngày hành chính về 17h`);
 }
 
-function editQuota() {
-  const val = prompt('Nhập tổng quỹ phép năm 2026 (ngày):', String(annualQuota));
-  if (val !== null && !isNaN(Number(val)) && Number(val) >= 0) {
-    annualQuota = Number(val);
-    persist();
-    renderAll();
-  }
-}
-
 function changeMonth(delta) {
   viewMonth += delta;
   if (viewMonth < 0) { viewMonth = 11; viewYear--; }
@@ -1318,6 +1489,13 @@ function changeMonth(delta) {
 function goToMonth(y, m) {
   viewYear = y;
   viewMonth = m;
+  renderAll();
+}
+
+function goToToday() {
+  const d = new Date();
+  viewYear = d.getFullYear();
+  viewMonth = d.getMonth();
   renderAll();
 }
 
@@ -1337,11 +1515,13 @@ function switchTab(tab, btn) {
 }
 
 function closeModal(id) {
+  if (id === 'profileModal' && isFirstSetup) return;
   document.getElementById(id).classList.remove('open');
 }
 
 window.closeTopModal = function() {
-  for (const id of ['entryModal', 'bulkModal']) {
+  for (const id of ['entryModal', 'bulkModal', 'profileModal']) {
+    if (id === 'profileModal' && isFirstSetup) continue;
     const el = document.getElementById(id);
     if (el && el.classList.contains('open')) {
       el.classList.remove('open');
@@ -1352,34 +1532,38 @@ window.closeTopModal = function() {
 };
 
 function formatVNDate(iso) {
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
+  const parts = String(iso || '').split('-');
+  if (parts.length !== 3) return iso;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
 function deliverFile(fileName, mimeType, content) {
+  const safeName = sanitizeFileName(fileName);
   if (window.AndroidBridge && window.AndroidBridge.saveOrShareFile) {
-    window.AndroidBridge.saveOrShareFile(fileName, mimeType, content);
+    window.AndroidBridge.saveOrShareFile(safeName, mimeType, content);
     return;
   }
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = fileName;
+  a.download = safeName;
   a.click();
   URL.revokeObjectURL(url);
 }
 
 function exportCSV() {
+  const p = userProfile || { empId: 'user' };
   const header = '\uFEFFNgày,Phân loại,Giờ bắt đầu,Giờ kết thúc,Số giờ,Hệ số (%),Ghi chú\n';
   const rows = [...entries]
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(e => `"${formatVNDate(e.date)}","${TYPE_META[e.type].label}","${e.start}","${e.end}",${e.hours},${e.mult},"${(e.note || '').replace(/"/g, '""')}"`)
     .join('\n');
-  deliverFile('ChamCong_LeBaThanh_qn000272.csv', 'text/csv;charset=utf-8', header + rows);
+  deliverFile(`ChamCong_${p.empId}.csv`, 'text/csv;charset=utf-8', header + rows);
 }
 
 function exportICS(scope) {
+  const p = userProfile || { fullName: '', empId: '', companyName: '' };
   const ym = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
   const list = scope === 'month'
     ? entries.filter(e => e.date.startsWith(ym))
@@ -1388,7 +1572,7 @@ function exportICS(scope) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//EVA Quang Ninh//WorkLog GCal//VI',
+    `PRODID:-//${p.companyName || 'WorkLog'}//WorkLog GCal//VI`,
     'CALSCALE:GREGORIAN'
   ];
   list.forEach(e => {
@@ -1397,11 +1581,11 @@ function exportICS(scope) {
     const eClean = e.end.replace(':', '') + '00';
     lines.push(
       'BEGIN:VEVENT',
-      `UID:${e.id}@worklog-eva-qn000272`,
+      `UID:${e.id}@worklog-${sanitizeFileName(p.empId || 'user')}`,
       `DTSTART;TZID=Asia/Ho_Chi_Minh:${dClean}T${sClean}`,
       `DTEND;TZID=Asia/Ho_Chi_Minh:${dClean}T${eClean}`,
       `SUMMARY:${TYPE_META[e.type].tag} ${e.note || TYPE_META[e.type].label} (${e.hours}h)`,
-      `DESCRIPTION:NV: Le Ba Thanh (qn000272) - He so ${e.mult}%`,
+      `DESCRIPTION:NV: ${p.fullName} (${p.empId} - ${p.companyName}) - He so ${e.mult}%`,
       'END:VEVENT'
     );
   });
@@ -1411,8 +1595,9 @@ function exportICS(scope) {
 }
 
 function exportJSON() {
-  const data = JSON.stringify({ employee: 'Lê Bá Thành (qn000272)', annualQuota, entries }, null, 2);
-  deliverFile('WorkLog_Backup_qn000272.json', 'application/json', data);
+  const data = JSON.stringify({ profile: userProfile, entries }, null, 2);
+  const empId = userProfile?.empId || 'user';
+  deliverFile(`WorkLog_Backup_${empId}.json`, 'application/json', data);
 }
 
 function importJSON(ev) {
@@ -1422,9 +1607,30 @@ function importJSON(ev) {
   reader.onload = () => {
     try {
       const parsed = JSON.parse(reader.result);
-      if (Array.isArray(parsed.entries)) {
-        entries = parsed.entries;
-        if (parsed.annualQuota) annualQuota = Number(parsed.annualQuota);
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.profile && typeof parsed.profile === 'object') {
+          userProfile = {
+            fullName: String(parsed.profile.fullName || '').slice(0, 80),
+            empId: String(parsed.profile.empId || '').slice(0, 40),
+            companyName: String(parsed.profile.companyName || '').slice(0, 100),
+            department: String(parsed.profile.department || '').slice(0, 80),
+            annualQuota: Number(parsed.profile.annualQuota) || 12
+          };
+          isFirstSetup = false;
+          closeModal('profileModal');
+        }
+        if (Array.isArray(parsed.entries)) {
+          entries = parsed.entries.filter(isValidEntry).map(e => ({
+            id: String(e.id || ('imp-' + Math.random().toString(36).slice(2, 8))).replace(/[^a-zA-Z0-9_-]/g, ''),
+            date: String(e.date),
+            type: e.type,
+            start: String(e.start || '08:00').slice(0, 5),
+            end: String(e.end || '17:00').slice(0, 5),
+            hours: Math.min(24, Math.max(0, Number(e.hours) || 0)),
+            mult: Math.min(500, Math.max(0, Number(e.mult) || 100)),
+            note: String(e.note || '').slice(0, 200)
+          }));
+        }
         persist();
         renderAll();
         notify('Khôi phục dữ liệu thành công');
@@ -1434,6 +1640,7 @@ function importJSON(ev) {
     }
   };
   reader.readAsText(file);
+  ev.target.value = '';
 }
 
 function notify(msg) {
@@ -1451,6 +1658,9 @@ function notify(msg) {
 
 initEnvironmentBanner();
 renderAll();
+if (!userProfile || !userProfile.fullName || !userProfile.empId || !userProfile.companyName) {
+  openProfileModal(true);
+}
 </script>
 </body>
 </html>
