@@ -1,0 +1,265 @@
+name: Build WorkLog APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.4'
+
+      - name: Generate Android project & build APK
+        run: |
+          mkdir -p /tmp/app/app/src/main/java/com/eva/worklog
+          mkdir -p /tmp/app/app/src/main/assets
+          mkdir -p /tmp/app/app/src/main/res/mipmap-xxhdpi
+
+          cp index.html /tmp/app/app/src/main/assets/index.html
+
+          cat << 'EOF' > /tmp/app/settings.gradle
+          rootProject.name = "WorkLogGCal"
+          include ':app'
+          EOF
+
+          cat << 'EOF' > /tmp/app/build.gradle
+          plugins {
+              id 'com.android.application' version '8.2.2' apply false
+          }
+          EOF
+
+          cat << 'EOF' > /tmp/app/gradle.properties
+          org.gradle.jvmargs=-Xmx2048m
+          android.useAndroidX=true
+          EOF
+
+          cat << 'EOF' > /tmp/app/app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'com.eva.worklog'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.eva.worklog"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+
+          cat << 'EOF' > /tmp/app/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application
+                  android:label="WorkLog &amp; GCal"
+                  android:icon="@mipmap/ic_launcher"
+                  android:usesCleartextTraffic="true">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:theme="@android:style/Theme.Material.Light.NoActionBar">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat << 'EOF' > /tmp/app/app/src/main/java/com/eva/worklog/MainActivity.java
+          package com.eva.worklog;
+
+          import android.app.Activity;
+          import android.content.ContentValues;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Environment;
+          import android.provider.MediaStore;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.Toast;
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.OutputStream;
+          import java.nio.charset.StandardCharsets;
+
+          public class MainActivity extends Activity {
+              private WebView webView;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  getWindow().setStatusBarColor(0xFF0F766E);
+
+                  webView = new WebView(this);
+                  setContentView(webView);
+
+                  WebSettings ws = webView.getSettings();
+                  ws.setJavaScriptEnabled(true);
+                  ws.setDomStorageEnabled(true);
+                  ws.setDatabaseEnabled(true);
+                  ws.setAllowFileAccess(true);
+
+                  webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+                  webView.setWebChromeClient(new WebChromeClient());
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                          String url = request.getUrl().toString();
+                          if (url.startsWith("http://") || url.startsWith("https://")) {
+                              try {
+                                  startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                              } catch (Exception ignored) {}
+                              return true;
+                          }
+                          return false;
+                      }
+                  });
+
+                  webView.loadUrl("file:///android_asset/index.html");
+              }
+
+              @Override
+              public void onBackPressed() {
+                  webView.evaluateJavascript("window.closeTopModal ? window.closeTopModal() : false", val -> {
+                      if (!"true".equals(val)) {
+                          if (webView.canGoBack()) {
+                              webView.goBack();
+                          } else {
+                              finish();
+                          }
+                      }
+                  });
+              }
+
+              private class AndroidBridge {
+                  @JavascriptInterface
+                  public void openGoogleCalendar(String url) {
+                      runOnUiThread(() -> {
+                          try {
+                              startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                          } catch (Exception e) {
+                              Toast.makeText(MainActivity.this, "Không mở được Google Calendar", Toast.LENGTH_SHORT).show();
+                          }
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void showToast(String msg) {
+                      runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
+                  }
+
+                  @JavascriptInterface
+                  public void saveOrShareFile(String fileName, String mimeType, String content) {
+                      runOnUiThread(() -> {
+                          try {
+                              byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+                              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                  ContentValues values = new ContentValues();
+                                  values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+                                  values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+                                  values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                                  Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                                  if (uri != null) {
+                                      try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+                                          if (os != null) os.write(bytes);
+                                      }
+                                  }
+                              } else {
+                                  File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                                  if (!dir.exists()) dir.mkdirs();
+                                  try (FileOutputStream fos = new FileOutputStream(new File(dir, fileName))) {
+                                      fos.write(bytes);
+                                  }
+                              }
+                              Toast.makeText(MainActivity.this, "Đã lưu vào Tải xuống: " + fileName, Toast.LENGTH_LONG).show();
+                          } catch (Exception e) {
+                              Toast.makeText(MainActivity.this, "Lỗi lưu tệp: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                          }
+                      });
+                  }
+              }
+          }
+          EOF
+
+          python3 - << 'PY'
+          import struct, zlib
+          w, h = 192, 192
+          raw = bytearray()
+          for y in range(h):
+              raw.append(0)
+              for x in range(w):
+                  in_card = (42 <= x <= 150) and (46 <= y <= 148)
+                  in_header = in_card and (46 <= y <= 72)
+                  d1 = abs((x - 74) - (y - 106)) <= 6 and 74 <= x <= 92 and 106 <= y <= 124
+                  d2 = abs((x - 92) + (y - 124)) <= 6 and 92 <= x <= 124 and 92 <= y <= 124
+                  if d1 or d2:
+                      raw.extend([15, 118, 110, 255])
+                  elif in_header:
+                      raw.extend([204, 251, 241, 255])
+                  elif in_card:
+                      raw.extend([255, 255, 255, 255])
+                  else:
+                      raw.extend([15, 118, 110, 255])
+          def chunk(tag, data):
+              return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xffffffff)
+          png = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(bytes(raw), 9)) + chunk(b"IEND", b"")
+          with open("/tmp/app/app/src/main/res/mipmap-xxhdpi/ic_launcher.png", "wb") as f:
+              f.write(png)
+          PY
+
+          cd /tmp/app
+          gradle assembleDebug
+          cp /tmp/app/app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/WorkLog-GCal.apk"
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WorkLog-GCal-APK
+          path: WorkLog-GCal.apk
+
+      - name: Publish APK to GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete v1.0 -y || true
+          git push origin :refs/tags/v1.0 || true
+          gh release create v1.0 WorkLog-GCal.apk --title "WorkLog & GCal v1.0" --notes "Ứng dụng chấm công độc lập cho Android"
