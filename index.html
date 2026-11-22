@@ -2,795 +2,528 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://www.googleapis.com https://accounts.google.com; frame-src https://calendar.google.com; img-src 'self' data: https:;" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://accounts.google.com; style-src 'unsafe-inline' https://accounts.google.com; connect-src https://www.googleapis.com https://accounts.google.com; frame-src https://calendar.google.com https://accounts.google.com; img-src data:; base-uri 'none'; form-action 'none'; object-src 'none'" />
+<meta name="referrer" content="no-referrer" />
 <meta name="theme-color" content="#0F766E" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="application-name" content="WorkLog & GCal" />
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230F766E'/%3E%3Crect x='112' y='128' width='288' height='272' rx='36' fill='%23FFFFFF'/%3E%3Crect x='112' y='128' width='288' height='72' rx='24' fill='%23CCFBF1'/%3E%3Cpath d='M218 318l-46-46 22-22 24 24 76-76 22 22z' fill='%230F766E'/%3E%3C/svg%3E" />
-<title>WorkLog &amp; GCal — Quản Lý Chấm Công &amp; Nghỉ Phép</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230F766E'/%3E%3Crect x='112' y='128' width='288' height='272' rx='36' fill='%23fff'/%3E%3Cpath d='M218 318l-46-46 22-22 24 24 76-76 22 22z' fill='%230F766E'/%3E%3C/svg%3E" />
+<title>WorkLog &amp; GCal</title>
 <style>
-  :root {
-    --bg: #F4F6F9;
-    --surface: #FFFFFF;
-    --surface-variant: #EEF2F6;
-    --primary: #0F766E;
-    --primary-dark: #115E59;
-    --primary-soft: #CCFBF1;
-    --text: #0F172A;
-    --text-muted: #475569;
-    --border: #E2E8F0;
-    --leave: #DC2626;
-    --leave-bg: #FEE2E2;
-    --ot: #D97706;
-    --ot-bg: #FEF3C7;
-    --sunday: #7C3AED;
-    --sunday-bg: #EDE9FE;
-    --welfare: #2563EB;
-    --welfare-bg: #DBEAFE;
-    --regular: #0F766E;
-    --regular-bg: #CCFBF1;
-    --radius: 16px;
-    --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.45;
-    padding-bottom: 88px;
-  }
-  .app-bar {
-    background: linear-gradient(135deg, #0F766E 0%, #115E59 100%);
-    color: #fff;
-    padding: 14px 16px 16px;
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    box-shadow: 0 2px 12px rgba(15, 118, 110, 0.25);
-  }
-  .app-bar-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-  }
-  .brand-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .brand h1 {
-    margin: 0;
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.2px;
-  }
-  .brand p {
-    margin: 2px 0 0;
-    font-size: 11.5px;
-    opacity: 0.92;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .emp-chip {
-    background: rgba(255,255,255,0.16);
-    border: 1px solid rgba(255,255,255,0.28);
-    border-radius: 999px;
-    padding: 5px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .container {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 12px;
-  }
-  .status-banner {
-    background: #EFF6FF;
-    border: 1px solid #BFDBFE;
-    color: #1E40AF;
-    border-radius: 12px;
-    padding: 9px 12px;
-    font-size: 12px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-  @media (min-width: 768px) {
-    .kpi-grid { grid-template-columns: repeat(5, 1fr); }
-  }
-  .kpi-card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 12px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-  }
-  .kpi-card.full-span { grid-column: span 2; }
-  @media (min-width: 768px) { .kpi-card.full-span { grid-column: span 1; } }
-  .kpi-badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 8px;
-    margin-bottom: 6px;
-  }
-  .kpi-val {
-    font-size: 21px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-  .kpi-sub {
-    font-size: 11.5px;
-    color: var(--text-muted);
-    margin-top: 3px;
-  }
-  .progress-wrap {
-    margin-top: 8px;
-    background: #E2E8F0;
-    height: 7px;
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .progress-bar {
-    height: 100%;
-    background: var(--leave);
-    border-radius: 999px;
-    transition: width 0.3s ease;
-  }
-  .tabs {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 12px;
-    scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 13px;
-    padding: 9px 14px;
-    border-radius: 12px;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  .tab-btn.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
-  }
-  .card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 14px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    margin-bottom: 14px;
-  }
-  .cal-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .month-nav {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .icon-btn {
-    background: var(--surface-variant);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 10px;
-    padding: 7px 11px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .month-title {
-    font-size: 16px;
-    font-weight: 800;
-    min-width: 118px;
-    text-align: center;
-  }
-  .quick-months {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-    align-items: center;
-  }
-  .qm-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; margin-right: 2px; }
-  .qm-btn {
-    border: 1px solid #FECACA;
-    background: #FEF2F2;
-    color: #B91C1C;
-    border-radius: 8px;
-    padding: 4px 8px;
-    font-size: 11.5px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 12px;
-    align-items: center;
-  }
-  .pill {
-    border: 1px solid var(--border);
-    background: var(--surface-variant);
-    color: var(--text);
-    border-radius: 999px;
-    padding: 5px 11px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .pill.active {
-    background: var(--text);
-    color: #fff;
-    border-color: var(--text);
-  }
-  .btn-primary {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 8px 13px;
-    font-size: 12.5px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .btn-confirm-card {
-    background: #0F766E;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 5px 9px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 5px;
-    display: inline-block;
-  }
-  .btn-google {
-    background: #1A73E8;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 9px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-outline {
-    background: #fff;
-    color: var(--primary);
-    border: 1.5px solid var(--primary);
-    border-radius: 10px;
-    padding: 7px 12px;
-    font-size: 12.5px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-  }
-  .cal-dow {
-    text-align: center;
-    font-size: 11.5px;
-    font-weight: 800;
-    color: var(--text-muted);
-    padding: 6px 0;
-    background: var(--surface-variant);
-    border-radius: 8px;
-  }
-  .cal-dow.sun { color: var(--leave); background: #FEF2F2; }
-  .cal-cell {
-    min-height: 76px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 4px;
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-  }
-  @media (min-width: 768px) { .cal-cell { min-height: 94px; padding: 6px; } }
-  .cal-cell.other-month { background: #F8FAFC; opacity: 0.45; }
-  .cal-cell.today { border: 2px solid var(--primary); }
-  .cal-cell.is-sun { background: #FAF5FF; }
-  .cell-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 3px;
-  }
-  .day-num { font-size: 12px; font-weight: 800; }
-  .day-num.sun { color: var(--leave); }
-  .quick-17h {
-    font-size: 9.5px;
-    font-weight: 700;
-    color: var(--regular);
-    background: var(--regular-bg);
-    border: none;
-    border-radius: 6px;
-    padding: 2px 4px;
-    cursor: pointer;
-  }
-  .ev-tag {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 4px;
-    border-radius: 5px;
-    margin-bottom: 2px;
-    line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .ev-leave { background: var(--leave-bg); color: var(--leave); }
-  .ev-ot { background: var(--ot-bg); color: #B45309; }
-  .ev-sunday { background: var(--sunday-bg); color: var(--sunday); }
-  .ev-welfare { background: var(--welfare-bg); color: var(--welfare); }
-  .ev-regular { background: var(--regular-bg); color: var(--regular); }
-  .status-signed { color: #0F766E; font-weight: 700; font-size: 11.5px; }
-  .status-pending { color: #B45309; font-weight: 700; font-size: 11.5px; }
-  .table-wrap { overflow-x: auto; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12.5px;
-  }
-  th, td {
-    padding: 9px 8px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-  }
-  th {
-    background: var(--surface-variant);
-    font-weight: 700;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  .sync-box {
-    border: 1px solid var(--border);
-    background: var(--surface-variant);
-    border-radius: 14px;
-    padding: 13px;
-    margin-bottom: 12px;
-  }
-  .sync-box h4 {
-    margin: 0 0 6px;
-    font-size: 14.5px;
-  }
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    display: none;
-    align-items: flex-end;
-    justify-content: center;
-    z-index: 100;
-    padding: 10px;
-  }
-  @media (min-width: 640px) { .modal-backdrop { align-items: center; } }
-  .modal-backdrop.open { display: flex; }
-  .modal {
-    background: #fff;
-    width: 100%;
-    max-width: 500px;
-    border-radius: 20px;
-    padding: 18px;
-    max-height: 92vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.22);
-  }
-  .modal h3 { margin: 0 0 10px; font-size: 17px; }
-  .form-group { margin-bottom: 11px; }
-  .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); }
-  .form-control {
-    width: 100%;
-    padding: 9px 11px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: inherit;
-  }
-  .form-control:focus {
-    outline: none;
-    border-color: var(--primary);
-  }
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .chip-group { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-  .note-chip {
-    background: var(--surface-variant);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px 8px;
-    font-size: 11.5px;
-    cursor: pointer;
-  }
-  .modal-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 14px;
-  }
-  .fab {
-    position: fixed;
-    right: 16px;
-    bottom: 18px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 13px 18px;
-    font-size: 14px;
-    font-weight: 700;
-    box-shadow: 0 6px 20px rgba(15, 118, 110, 0.38);
-    cursor: pointer;
-    z-index: 50;
-  }
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: 74px;
-    transform: translateX(-50%);
-    background: #0F172A;
-    color: #fff;
-    padding: 9px 16px;
-    border-radius: 999px;
-    font-size: 12.5px;
-    font-weight: 600;
-    z-index: 200;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-    display: none;
-  }
-  .empty-state {
-    text-align: center;
-    padding: 20px 12px;
-    color: var(--text-muted);
-    font-size: 13px;
-  }
-  .hidden { display: none !important; }
+:root{--bg:#F4F6F9;--sf:#fff;--sv:#EEF2F6;--pr:#0F766E;--pd:#115E59;--ps:#CCFBF1;--tx:#0F172A;--mu:#475569;--bd:#E2E8F0;--lv:#DC2626;--lvb:#FEE2E2;--ot:#B45309;--otb:#FEF3C7;--sn:#7C3AED;--snb:#EDE9FE;--wf:#2563EB;--wfb:#DBEAFE}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);line-height:1.45;padding-bottom:88px}
+button{font-family:inherit}
+.bar{background:linear-gradient(135deg,var(--pr),var(--pd));color:#fff;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));position:sticky;top:0;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bar h1{margin:0;font-size:17px}.bar p{margin:2px 0 0;font-size:12px;opacity:.9}
+.chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;max-width:45vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrap{max-width:1100px;margin:0 auto;padding:12px}
+.banner{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;border-radius:12px;padding:9px 12px;font-size:12px;margin-bottom:12px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:768px){.kpis{grid-template-columns:repeat(5,1fr)}}
+.kpi{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:12px}
+.kpi:first-child{grid-column:span 2}@media(min-width:768px){.kpi:first-child{grid-column:auto}}
+.kb{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;margin-bottom:6px}
+.kv{font-size:21px;font-weight:800}.ks{font-size:11.5px;color:var(--mu)}
+.prog{margin-top:8px;background:var(--bd);height:7px;border-radius:99px;overflow:hidden}.prog i{display:block;height:100%;background:var(--lv)}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none}
+.tb{border:1px solid var(--bd);background:var(--sf);color:var(--mu);font-weight:600;font-size:13px;padding:9px 14px;border-radius:12px;white-space:nowrap;cursor:pointer}
+.tb.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.mt{font-size:16px;font-weight:800;min-width:110px;text-align:center}
+.ib{background:var(--sv);border:1px solid var(--bd);color:var(--tx);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer}
+.pill{border:1px solid var(--bd);background:var(--sv);color:var(--tx);border-radius:99px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer}
+.pill.on{background:var(--tx);color:#fff}
+.qm{border:1px solid #FECACA;background:#FEF2F2;color:#B91C1C;border-radius:8px;padding:4px 8px;font-size:11.5px;font-weight:700;cursor:pointer}
+.bp,.bo,.bg{border-radius:10px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--pr)}
+.bp{background:var(--pr);color:#fff}.bo{background:#fff;color:var(--pr)}.bg{background:#1A73E8;color:#fff;border-color:#1A73E8}
+button:disabled{opacity:.45;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:11.5px;font-weight:800;color:var(--mu);padding:6px 0;background:var(--sv);border-radius:8px}.dow.s{color:var(--lv)}
+.cell{min-height:76px;border:1px solid var(--bd);border-radius:10px;padding:4px;background:#fff;cursor:pointer;overflow:hidden}
+@media(min-width:768px){.cell{min-height:94px}}
+.cell.o{opacity:.4}.cell.t{border:2px solid var(--pr)}.cell.sn{background:#FAF5FF}
+.ct{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.dn{font-size:12px;font-weight:800}.dn.s{color:var(--lv)}
+.q17{font-size:10px;font-weight:700;color:var(--pr);background:var(--ps);border:0;border-radius:6px;padding:2px 4px;cursor:pointer}
+.ev{font-size:10px;font-weight:700;padding:2px 4px;border-radius:5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-regular{background:var(--ps);color:var(--pr)}.ev-ot{background:var(--otb);color:var(--ot)}.ev-leave{background:var(--lvb);color:var(--lv)}.ev-sunday{background:var(--snb);color:var(--sn)}.ev-welfare{background:var(--wfb);color:var(--wf)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--bd);text-align:left}th{background:var(--sv);color:var(--mu);white-space:nowrap}
+.sb{border:1px solid var(--bd);background:var(--sv);border-radius:14px;padding:13px;margin-bottom:12px}.sb h4{margin:0 0 6px;font-size:14.5px}.sb p{font-size:12.5px;color:var(--mu);margin:0 0 8px}
+.mb{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:flex-end;justify-content:center;z-index:100;padding:10px}
+@media(min-width:640px){.mb{align-items:center}}.mb.open{display:flex}
+.md{background:#fff;width:100%;max-width:500px;border-radius:20px;padding:18px;max-height:92vh;overflow-y:auto}
+.md h3{margin:0 0 10px;font-size:17px}
+.fg{margin-bottom:11px}.fg label{display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--mu)}
+.fc{width:100%;padding:9px 11px;border:1.5px solid var(--bd);border-radius:10px;font-size:14px;font-family:inherit}.fc:focus{outline:2px solid var(--pr);border-color:var(--pr)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nc{background:var(--sv);border:1px solid var(--bd);border-radius:8px;padding:4px 8px;font-size:11.5px;cursor:pointer;margin:5px 5px 0 0}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.ex{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--sv);border-radius:10px;padding:6px 10px;margin-bottom:6px;font-size:12.5px}
+.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));background:var(--pr);color:#fff;border:0;border-radius:99px;padding:13px 18px;font-size:14px;font-weight:700;box-shadow:0 6px 20px rgba(15,118,110,.38);cursor:pointer;z-index:50}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--tx);color:#fff;padding:9px 16px;border-radius:99px;font-size:12.5px;font-weight:600;z-index:200;display:none;max-width:90vw;text-align:center}
+.empty{text-align:center;padding:20px;color:var(--mu);font-size:13px}
+.hidden{display:none!important}
+.ok{color:var(--pr);font-weight:700}.pend{color:var(--ot);font-weight:700}
+iframe{width:100%;height:500px;border:1px solid var(--bd);border-radius:12px}
 </style>
 </head>
 <body>
-
-<header class="app-bar">
-  <div class="app-bar-top">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="3"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-          <path d="M9 16l2 2 4-4"></path>
-        </svg>
-      </div>
-      <div style="min-width:0;">
-        <h1>WorkLog &amp; GCal</h1>
-        <p id="headerCompany">Chưa thiết lập công ty</p>
-      </div>
-    </div>
-    <div class="emp-chip" id="headerEmpChip" onclick="openProfileModal(false)">Thiết lập hồ sơ</div>
-  </div>
+<header class="bar">
+  <div><h1>WorkLog &amp; GCal</h1><p id="company"></p></div>
+  <button class="chip" id="empChip" data-act="profile"></button>
 </header>
 
-<main class="container">
-  <div class="status-banner" id="modeBanner">
-    <span id="modeBannerText"></span>
-    <button class="icon-btn" style="padding:3px 8px;font-size:11px;" onclick="document.getElementById('modeBanner').style.display='none'">Ẩn</button>
-  </div>
-
-  <section class="kpi-grid" id="kpiGrid"></section>
-
+<main class="wrap">
+  <div class="banner" id="banner"><span>Dữ liệu lưu ngay trên thiết bị này. Hãy sao lưu JSON định kỳ để không mất dữ liệu.</span><button class="ib" data-act="hideBanner">Ẩn</button></div>
+  <section class="kpis" id="kpis"></section>
   <nav class="tabs">
-    <button class="tab-btn active" data-tab="calendar" onclick="switchTab('calendar', this)">Lịch Chấm Công</button>
-    <button class="tab-btn" data-tab="leavecard" onclick="switchTab('leavecard', this)">Thẻ Xin Nghỉ</button>
-    <button class="tab-btn" data-tab="records" onclick="switchTab('records', this)">Chi Tiết &amp; Báo Cáo</button>
-    <button class="tab-btn" data-tab="gcal" onclick="switchTab('gcal', this)">Đồng Bộ Google</button>
+    <button class="tb on" data-act="tab" data-v="calendar">Lịch chấm công</button>
+    <button class="tb" data-act="tab" data-v="leave">Thẻ xin nghỉ</button>
+    <button class="tb" data-act="tab" data-v="records">Chi tiết &amp; báo cáo</button>
+    <button class="tb" data-act="tab" data-v="gcal">Đồng bộ Google</button>
   </nav>
 
   <section id="tab-calendar" class="card">
-    <div class="cal-header">
-      <div class="month-nav">
-        <button class="icon-btn" onclick="changeMonth(-1)">&#9664;</button>
-        <div class="month-title" id="monthTitle">Tháng --/----</div>
-        <button class="icon-btn" onclick="changeMonth(1)">&#9654;</button>
-        <button class="icon-btn" onclick="goToToday()">Hôm nay</button>
-      </div>
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button class="btn-outline" onclick="openBulkModal()">Điền ngày trống (Về 17h)</button>
-      </div>
+    <div class="row">
+      <button class="ib" data-act="prev" aria-label="Tháng trước">&#9664;</button>
+      <div class="mt" id="monthTitle"></div>
+      <button class="ib" data-act="next" aria-label="Tháng sau">&#9654;</button>
+      <button class="ib" data-act="today">Hôm nay</button>
+      <button class="bo" data-act="bulk">Điền ngày trống (về 17h)</button>
     </div>
-
-    <div class="quick-months" id="quickMonthsBar"></div>
-
-    <div class="filter-bar">
-      <button class="pill active" onclick="setFilter('all', this)">Tất cả</button>
-      <button class="pill" onclick="setFilter('ot', this)">Tăng ca OT</button>
-      <button class="pill" onclick="setFilter('leave', this)">Nghỉ phép</button>
-      <button class="pill" onclick="setFilter('sunday', this)">Chủ nhật</button>
-      <button class="pill" onclick="setFilter('welfare', this)">Phúc lợi</button>
-      <button class="pill" onclick="setFilter('regular', this)">Về 17h (0h OT)</button>
-    </div>
-
-    <div class="cal-grid" id="calGrid"></div>
+    <div class="row" id="qm"></div>
+    <div class="row" id="filters"></div>
+    <div class="grid" id="grid"></div>
   </section>
 
-  <section id="tab-leavecard" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-      <div>
-        <h3 style="margin:0; font-size:16px;" id="leaveCardTitle">Thẻ Xin Nghỉ Năm</h3>
-        <p style="margin:3px 0 0; font-size:12px; color:var(--text-muted);" id="leaveCardSubtitle"></p>
-      </div>
-      <button class="btn-outline" onclick="openProfileModal(false)">Sửa hồ sơ &amp; quỹ phép (<span id="quotaBadge">12</span> ngày)</button>
+  <section id="tab-leave" class="card hidden">
+    <div class="row" style="justify-content:space-between">
+      <div><h3 style="margin:0;font-size:16px" id="lvTitle"></h3><div style="font-size:12px;color:var(--mu)" id="lvSub"></div></div>
+      <button class="bo" data-act="profile">Sửa hồ sơ &amp; quỹ phép</button>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>STT</th>
-            <th>Loại nghỉ</th>
-            <th>Ngày nghỉ</th>
-            <th>Thời gian</th>
-            <th>Xác nhận thẻ nghỉ</th>
-          </tr>
-        </thead>
-        <tbody id="leaveCardBody"></tbody>
-      </table>
-    </div>
+    <div class="tw"><table><thead><tr><th>STT</th><th>Loại nghỉ</th><th>Ngày nghỉ</th><th>Thời gian</th><th>Xác nhận</th></tr></thead><tbody id="lvBody"></tbody></table></div>
   </section>
 
   <section id="tab-records" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-      <h3 style="margin:0; font-size:16px;">Bảng Chi Tiết &amp; Xuất Báo Cáo</h3>
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button class="btn-primary" onclick="exportCSV()">Xuất CSV (Excel)</button>
-        <button class="btn-outline" onclick="exportJSON()">Sao lưu JSON</button>
-        <label class="btn-outline" style="cursor:pointer;">
-          Khôi phục JSON
-          <input type="file" accept=".json" style="display:none" onchange="importJSON(event)" />
-        </label>
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0;font-size:16px">Chi tiết &amp; xuất báo cáo</h3>
+      <div class="row" style="margin:0">
+        <button class="bp" data-act="csv">Xuất CSV</button>
+        <button class="bo" data-act="json">Sao lưu JSON</button>
+        <button class="bo" data-act="import">Khôi phục JSON</button>
       </div>
     </div>
-    <div class="form-group">
-      <input type="text" id="searchInput" class="form-control" placeholder="Tìm theo ngày (VD: 2026-11) hoặc ghi chú..." oninput="renderRecordsTable()" />
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Ngày</th>
-            <th>Loại</th>
-            <th>Khung giờ</th>
-            <th>Số giờ</th>
-            <th>Hệ số</th>
-            <th>Ghi chú</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody id="recordsBody"></tbody>
-      </table>
-    </div>
+    <div class="fg"><input class="fc" id="search" placeholder="Tìm theo ngày (VD: 2026-11) hoặc ghi chú..." /></div>
+    <div class="tw"><table><thead><tr><th>Ngày</th><th>Loại</th><th>Khung giờ</th><th>Giờ</th><th>Hệ số</th><th>Ghi chú</th><th></th></tr></thead><tbody id="recBody"></tbody></table></div>
   </section>
 
   <section id="tab-gcal" class="card hidden">
-    <h3 style="margin:0 0 10px; font-size:16px;">Đồng Bộ Online Theo Tài Khoản Google</h3>
-
-    <div class="sync-box">
-      <h4>1. Đồng bộ tức thì qua App Google Calendar trên Android (Không cần cấu hình)</h4>
-      <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 8px;">
-        Khi bạn bấm <strong>"Lưu &amp; Mở Google Calendar"</strong> ở bất kỳ ngày nào, ứng dụng Google Calendar trên điện thoại sẽ tự động mở và lưu sự kiện lên tài khoản Google của bạn.
-      </p>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn-primary" onclick="exportICS('month')">Xuất tệp .ICS Tháng Đang Xem</button>
-        <button class="btn-outline" onclick="exportICS('year')">Xuất tệp .ICS Cả Năm</button>
-      </div>
+    <h3 style="margin:0 0 10px;font-size:16px">Đồng bộ Google Calendar</h3>
+    <div class="sb">
+      <h4>1. Xuất tệp lịch (.ics)</h4>
+      <p>Mở tệp .ics bằng Google Calendar để thêm sự kiện, không cần cấu hình. Nút "Lưu &amp; mở Google Calendar" trong mỗi bản ghi cũng dùng cách này.</p>
+      <div class="row" style="margin:0"><button class="bp" data-act="ics" data-v="month">Xuất tháng đang xem</button><button class="bo" data-act="ics" data-v="year">Xuất cả năm</button></div>
     </div>
-
-    <div class="sync-box" style="background:#EFF6FF; border-color:#BFDBFE;">
-      <h4 style="color:#1E3A8A;">2. Đồng bộ online 2 chiều tự động (Google Calendar API)</h4>
-      <p style="font-size:12.5px; color:#1E40AF; margin:0 0 10px;">
-        Kết nối trực tiếp với tài khoản Google để đẩy toàn bộ dữ liệu chấm công lên Lịch Google hoặc khôi phục dữ liệu về máy mới. <em>(Yêu cầu mở ứng dụng qua <code>https://</code>).</em>
-      </p>
-      <div class="form-group">
-        <label style="color:#1E3A8A;">Google OAuth Client ID (Web Application)</label>
-        <input type="text" id="gClientId" class="form-control" placeholder="Dán Client ID (...apps.googleusercontent.com)" oninput="saveGoogleCfg()" />
+    <div class="sb">
+      <h4>2. Đồng bộ qua Google Calendar API</h4>
+      <p>Cần mở ứng dụng qua <code>https://</code> và có OAuth Client ID (Web). Phiên đăng nhập chỉ giữ trong bộ nhớ, tắt trang là hết.</p>
+      <div class="fg"><input class="fc" id="gcid" placeholder="xxxx.apps.googleusercontent.com" autocomplete="off" /></div>
+      <div class="row" style="margin:0">
+        <button class="bg" data-act="gconnect">Đăng nhập Google</button>
+        <button class="bp" id="gPush" data-act="gpush" disabled>Đẩy lên Google</button>
+        <button class="bo" id="gPull" data-act="gpull" disabled>Tải từ Google</button>
       </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <button class="btn-google" onclick="connectGoogleAccount()">Đăng nhập tài khoản Google</button>
-        <button class="btn-primary" id="btnPushGoogle" onclick="pushAllToGoogle()" disabled>Đẩy lên Google Calendar</button>
-        <button class="btn-outline" id="btnPullGoogle" onclick="pullFromGoogle()" disabled>Tải từ Google về máy</button>
-      </div>
-      <div id="googleSyncStatus" style="font-size:12px; color:#1E3A8A; margin-top:8px; font-weight:600;">
-        Trạng thái: Chưa kết nối API (Vẫn dùng được đồng bộ 1-chạm ở mục 1).
-      </div>
+      <div id="gStatus" style="font-size:12px;margin-top:8px;font-weight:600">Chưa kết nối.</div>
     </div>
-
-    <div class="sync-box">
-      <h4>3. Xem trực tiếp Lịch Google cá nhân ngay trong ứng dụng</h4>
-      <div class="form-group" style="margin-bottom:8px;">
-        <input type="text" id="gEmbedUrl" class="form-control" placeholder="Dán liên kết nhúng Google Calendar (https://calendar.google.com/calendar/embed?src=...)" oninput="saveEmbedUrl()" />
-      </div>
-      <div id="embedContainer"></div>
+    <div class="sb">
+      <h4>3. Xem Google Calendar trong ứng dụng</h4>
+      <div class="fg"><input class="fc" id="embed" placeholder="https://calendar.google.com/calendar/embed?src=..." autocomplete="off" /></div>
+      <div id="embedBox"></div>
     </div>
   </section>
 </main>
 
-<button class="fab" onclick="openEntryModal(null)">+ Ghi chấm công</button>
-<div class="toast" id="toastBox"></div>
+<button class="fab" data-act="add">+ Ghi chấm công</button>
+<div class="toast" id="toast" role="status"></div>
+<input type="file" id="file" accept=".json,application/json" class="hidden" />
 
-<!-- ONBOARDING / PROFILE SETUP MODAL -->
-<div class="modal-backdrop" id="profileModal">
-  <div class="modal">
-    <h3 id="profileModalTitle">Thiết Lập Hồ Sơ Nhân Viên</h3>
-    <p id="profileModalDesc" style="font-size:12.5px; color:var(--text-muted); margin-top:0;">
-      Nhập thông tin của bạn để cá nhân hóa bảng chấm công, thẻ xin nghỉ và đồng bộ Google Calendar. Dữ liệu chỉ lưu cục bộ trên thiết bị của bạn.
-    </p>
-    <div class="form-group">
-      <label>Họ và tên <span style="color:#DC2626;">*</span></label>
-      <input type="text" id="pFullName" class="form-control" placeholder="VD: Nguyễn Văn A" maxlength="80" />
-    </div>
-    <div class="row-2">
-      <div class="form-group">
-        <label>Mã nhân viên <span style="color:#DC2626;">*</span></label>
-        <input type="text" id="pEmpId" class="form-control" placeholder="VD: NV001234" maxlength="40" />
-      </div>
-      <div class="form-group">
-        <label>Quỹ phép năm (ngày)</label>
-        <input type="number" step="0.5" min="0" max="60" id="pQuota" class="form-control" value="12" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Tên công ty <span style="color:#DC2626;">*</span></label>
-      <input type="text" id="pCompany" class="form-control" placeholder="VD: Công ty TNHH ABC" maxlength="100" />
-    </div>
-    <div class="form-group">
-      <label>Bộ phận / Xưởng (tùy chọn)</label>
-      <input type="text" id="pDepartment" class="form-control" placeholder="VD: Bộ phận Lắp ráp" maxlength="80" />
-    </div>
-    <div class="modal-actions" style="justify-content:space-between; align-items:center;">
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn-primary" onclick="saveProfile()">Lưu &amp; Bắt đầu sử dụng</button>
-        <button class="icon-btn hidden" id="btnCloseProfile" onclick="closeModal('profileModal')">Đóng</button>
-      </div>
-      <label class="btn-outline" style="cursor:pointer; font-size:11.5px; padding:6px 10px;">
-        Nạp tệp sao lưu (.json)
-        <input type="file" accept=".json" style="display:none" onchange="importJSON(event)" />
-      </label>
-    </div>
+<div class="mb" id="m-profile"><div class="md" role="dialog" aria-modal="true">
+  <h3>Hồ sơ nhân viên</h3>
+  <p style="font-size:12.5px;color:var(--mu);margin-top:0">Thông tin chỉ lưu trên thiết bị của bạn.</p>
+  <div class="fg"><label for="pName">Họ và tên *</label><input class="fc" id="pName" maxlength="80" autocomplete="off" /></div>
+  <div class="r2">
+    <div class="fg"><label for="pId">Mã nhân viên *</label><input class="fc" id="pId" maxlength="40" autocomplete="off" /></div>
+    <div class="fg"><label for="pQuota">Quỹ phép năm (ngày)</label><input class="fc" id="pQuota" type="number" step="0.5" min="0" max="60" value="12" /></div>
   </div>
-</div>
+  <div class="fg"><label for="pCo">Tên công ty *</label><input class="fc" id="pCo" maxlength="100" autocomplete="off" /></div>
+  <div class="fg"><label for="pDep">Bộ phận / xưởng</label><input class="fc" id="pDep" maxlength="80" autocomplete="off" /></div>
+  <div class="acts"><button class="bp" data-act="saveProfile">Lưu hồ sơ</button><button class="ib" id="pClose" data-act="close">Đóng</button><button class="bo" data-act="import">Nạp tệp sao lưu</button></div>
+</div></div>
 
-<!-- ENTRY MODAL -->
-<div class="modal-backdrop" id="entryModal">
-  <div class="modal">
-    <h3 id="modalTitle">Ghi Nhận Chấm Công</h3>
-    <div id="existingList" style="margin-bottom:10px;"></div>
-    <input type="hidden" id="editId" />
-    <div class="row-2">
-      <div class="form-group">
-        <label>Ngày</label>
-        <input type="date" id="fDate" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label>Phân loại</label>
-        <select id="fType" class="form-control" onchange="onTypeChange()">
-          <option value="regular">Hành chính 17h (Không OT)</option>
-          <option value="ot">Tăng ca OT</option>
-          <option value="leave">Nghỉ phép</option>
-          <option value="sunday">Đi làm Chủ nhật</option>
-          <option value="welfare">Đi làm phúc lợi</option>
-        </select>
-      </div>
-    </div>
-    <div class="row-2">
-      <div class="form-group">
-        <label>Giờ bắt đầu</label>
-        <input type="time" id="fStart" class="form-control" value="08:00" />
-      </div>
-      <div class="form-group">
-        <label>Giờ kết thúc</label>
-        <input type="time" id="fEnd" class="form-control" value="17:00" />
-      </div>
-    </div>
-    <div class="row-2">
-      <div class="form-group">
-        <label>Số giờ ghi nhận</label>
-        <input type="number" step="0.5" min="0" max="24" id="fHours" class="form-control" value="8" />
-      </div>
-      <div class="form-group">
-        <label>Hệ số lương (%)</label>
-        <select id="fMult" class="form-control">
-          <option value="100">100% (Hành chính / Phép)</option>
-          <option value="150">150% (Tăng ca ngày thường)</option>
-          <option value="200">200% (Đi làm Chủ nhật)</option>
-          <option value="300">300% (Lễ / Phúc lợi)</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Ghi chú</label>
-      <input type="text" id="fNote" class="form-control" placeholder="Nhập ghi chú..." maxlength="200" />
-      <div class="chip-group">
-        <span class="note-chip" onclick="setNote('Làm hành chính về 17h')">Về 17h</span>
-        <span class="note-chip" onclick="setNote('Không tăng ca (tan ca 17:00)')">Không tăng ca</span>
-        <span class="note-chip" onclick="setNote('Tăng ca xưởng')">Tăng ca xưởng</span>
-        <span class="note-chip" onclick="setNote('Đi làm full')">Đi làm full</span>
-        <span class="note-chip" onclick="setNote('Nghỉ phép năm')">Nghỉ phép năm</span>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="saveEntry(false)">Lưu bản ghi</button>
-      <button class="btn-outline" onclick="saveEntry(true)">Lưu &amp; Mở Google Calendar</button>
-      <button class="icon-btn" onclick="closeModal('entryModal')">Đóng</button>
-    </div>
+<div class="mb" id="m-entry"><div class="md" role="dialog" aria-modal="true">
+  <h3 id="eTitle">Ghi nhận chấm công</h3>
+  <div id="exist"></div>
+  <input type="hidden" id="editId" />
+  <div class="r2">
+    <div class="fg"><label for="fDate">Ngày</label><input class="fc" type="date" id="fDate" /></div>
+    <div class="fg"><label for="fType">Phân loại</label><select class="fc" id="fType">
+      <option value="regular">Hành chính 17h (không OT)</option><option value="ot">Tăng ca OT</option><option value="leave">Nghỉ phép</option><option value="sunday">Đi làm Chủ nhật</option><option value="welfare">Đi làm phúc lợi</option></select></div>
   </div>
-</div>
+  <div class="r2">
+    <div class="fg"><label for="fStart">Giờ bắt đầu</label><input class="fc" type="time" id="fStart" /></div>
+    <div class="fg"><label for="fEnd">Giờ kết thúc</label><input class="fc" type="time" id="fEnd" /></div>
+  </div>
+  <div class="r2">
+    <div class="fg"><label for="fHours">Số giờ ghi nhận</label><input class="fc" type="number" step="0.5" min="0" max="24" id="fHours" /></div>
+    <div class="fg"><label for="fMult">Hệ số lương</label><select class="fc" id="fMult"><option value="100">100%</option><option value="150">150% (tăng ca)</option><option value="200">200% (Chủ nhật)</option><option value="300">300% (lễ / phúc lợi)</option></select></div>
+  </div>
+  <div class="fg"><label for="fNote">Ghi chú</label><input class="fc" id="fNote" maxlength="200" />
+    <div><span class="nc" data-act="note" data-v="Làm hành chính về 17h">Về 17h</span><span class="nc" data-act="note" data-v="Tăng ca xưởng">Tăng ca xưởng</span><span class="nc" data-act="note" data-v="Đi làm full">Đi làm full</span><span class="nc" data-act="note" data-v="Nghỉ phép năm">Nghỉ phép năm</span></div></div>
+  <div class="acts"><button class="bp" data-act="save">Lưu bản ghi</button><button class="bo" data-act="saveG">Lưu &amp; mở Google Calendar</button><button class="ib" data-act="close">Đóng</button></div>
+</div></div>
 
-<!-- BULK FILL MODAL -->
-<div class="modal-backdrop" id="bulkModal">
-  <div class="modal">
-    <h3>Điền Ngày Trống (Về 17h / Không Tăng Ca)</h3>
-    <p style="font-size:12.5px; color:var(--text-muted); margin-top:0;">
-      Tự động điền các ngày làm việc từ Thứ 2 đến Thứ 7 chưa có dữ liệu trong tháng đang xem (bỏ qua Chủ nhật và ngày đã chấm công).
-    </p>
-    <div class="form-group">
-      <label>Phạm vi điền</label>
-      <select id="bulkScope" class="form-control">
-        <option value="toToday" id="bulkToday
+<div class="mb" id="m-bulk"><div class="md" role="dialog" aria-modal="true">
+  <h3>Điền ngày trống (về 17h)</h3>
+  <p style="font-size:12.5px;color:var(--mu);margin-top:0">Điền các ngày Thứ 2 đến Thứ 7 chưa có dữ liệu trong tháng đang xem. Bỏ qua Chủ nhật.</p>
+  <div class="fg"><label for="bScope">Phạm vi</label><select class="fc" id="bScope"><option value="today">Từ đầu tháng đến hôm nay</option><option value="full">Cả tháng</option></select></div>
+  <div class="acts"><button class="bp" data-act="bulkGo">Điền ngay</button><button class="ib" data-act="close">Đóng</button></div>
+</div></div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; // giờ địa phương, không lệch múi giờ
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && ymd(pd(s)) === s;
+const isTime = s => typeof s === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s);
+const vn = s => `${s.slice(8)}/${s.slice(5, 7)}/${s.slice(0, 4)}`;
+const DOW = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+const uid = () => crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+const TYPES = {
+  regular: { n: 'Về 17h', s: '08:00', e: '17:00', h: 8, m: 100 },
+  ot: { n: 'Tăng ca', s: '17:00', e: '19:00', h: 2, m: 150 },
+  leave: { n: 'Nghỉ phép', s: '08:00', e: '17:00', h: 8, m: 100 },
+  sunday: { n: 'Chủ nhật', s: '08:00', e: '17:00', h: 8, m: 200 },
+  welfare: { n: 'Phúc lợi', s: '08:00', e: '17:00', h: 8, m: 300 }
+};
+const MULTS = [100, 150, 200, 300];
+const KEY = 'worklog.v2';
+let S = { profile: null, records: [], gcid: '', embed: '' };
+let view = new Date(); view.setDate(1);
+let filter = 'all', gToken = null, tab = 'calendar';
+
+/* ---------- Dữ liệu: kiểm tra & lưu ---------- */
+const str = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+function cleanProfile(p) {
+  if (!p || typeof p !== 'object') return null;
+  const q = Number(p.quota);
+  return { name: str(p.name, 80), empId: str(p.empId, 40), company: str(p.company, 100), dept: str(p.dept, 80), quota: isFinite(q) ? Math.min(60, Math.max(0, q)) : 12 };
+}
+function cleanRec(r) {
+  if (!r || typeof r !== 'object' || !TYPES[r.type] || !isDate(r.date)) return null;
+  const T = TYPES[r.type], h = Number(r.hours), m = Number(r.mult);
+  return {
+    id: /^[0-9a-f]{8,64}$/.test(r.id) ? r.id : uid(), type: r.type, date: r.date,
+    start: isTime(r.start) ? r.start : T.s, end: isTime(r.end) ? r.end : T.e,
+    hours: isFinite(h) ? Math.min(24, Math.max(0, h)) : T.h, mult: MULTS.includes(m) ? m : T.m,
+    note: str(r.note, 200), signed: r.signed === true
+  };
+}
+function load() {
+  try {
+    const r = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (r) { S.profile = cleanProfile(r.profile); S.records = (r.records || []).map(cleanRec).filter(Boolean); S.gcid = str(r.gcid, 200); S.embed = str(r.embed, 600); }
+  } catch (e) { /* dữ liệu hỏng: bắt đầu lại */ }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Không lưu được dữ liệu (bộ nhớ đầy?)'); } }
+let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(tt); tt = setTimeout(() => t.style.display = 'none', 2600); }
+const byDate = () => { const o = {}; S.records.forEach(r => (o[r.date] = o[r.date] || []).push(r)); return o; };
+const title = r => `${TYPES[r.type].n} ${r.hours}h${S.profile && S.profile.company ? ' - ' + S.profile.company : ''}`;
+
+/* ---------- Hiển thị ---------- */
+function renderAll() { renderHead(); renderKpi(); renderCal(); if (tab === 'leave') renderLeave(); if (tab === 'records') renderRecs(); }
+function renderHead() {
+  const p = S.profile;
+  $('#company').textContent = p && p.company ? p.company : 'Chưa thiết lập công ty';
+  $('#empChip').textContent = p && p.name ? p.name : 'Thiết lập hồ sơ';
+}
+function kpi(label, val, sub, color, bg, pct) {
+  const c = el('div', 'kpi'), b = el('span', 'kb', label);
+  b.style.color = color; b.style.background = bg;
+  c.append(b, el('div', 'kv', val), el('div', 'ks', sub));
+  if (pct != null) { const w = el('div', 'prog'), i = el('i'); i.style.width = Math.min(100, pct) + '%'; w.append(i); c.append(w); }
+  return c;
+}
+function renderKpi() {
+  const y = view.getFullYear(), pre = `${y}-${pad(view.getMonth() + 1)}-`;
+  const q = S.profile ? S.profile.quota : 12;
+  const used = S.records.filter(r => r.type === 'leave' && r.date.startsWith(y + '-')).reduce((a, r) => a + r.hours, 0) / 8;
+  const mr = S.records.filter(r => r.date.startsWith(pre));
+  const sum = t => mr.filter(r => r.type === t).reduce((a, r) => a + r.hours, 0);
+  const g = $('#kpis'); g.replaceChildren(
+    kpi('Phép năm ' + y, `${used}/${q} ngày`, `Còn ${Math.max(0, q - used)} ngày`, '#DC2626', '#FEE2E2', q ? used / q * 100 : 0),
+    kpi('Tăng ca', sum('ot') + 'h', 'Tháng đang xem', '#B45309', '#FEF3C7'),
+    kpi('Chủ nhật', sum('sunday') + 'h', 'Tháng đang xem', '#7C3AED', '#EDE9FE'),
+    kpi('Phúc lợi', sum('welfare') + 'h', 'Tháng đang xem', '#2563EB', '#DBEAFE'),
+    kpi('Về 17h', mr.filter(r => r.type === 'regular').length + ' ngày', 'Không tăng ca', '#0F766E', '#CCFBF1'));
+}
+function renderCal() {
+  const y = view.getFullYear(), m = view.getMonth();
+  $('#monthTitle').textContent = `Tháng ${m + 1}/${y}`;
+  const f = $('#filters'); f.replaceChildren();
+  [['all', 'Tất cả'], ['ot', 'Tăng ca OT'], ['leave', 'Nghỉ phép'], ['sunday', 'Chủ nhật'], ['welfare', 'Phúc lợi'], ['regular', 'Về 17h']].forEach(([k, t]) => {
+    const b = el('button', 'pill' + (filter === k ? ' on' : ''), t); b.dataset.act = 'filter'; b.dataset.v = k; f.append(b);
+  });
+  const qm = $('#qm'); qm.replaceChildren();
+  const cnt = {}; S.records.filter(r => r.type === 'leave' && r.date.startsWith(y + '-')).forEach(r => { const k = +r.date.slice(5, 7); cnt[k] = (cnt[k] || 0) + 1; });
+  if (Object.keys(cnt).length) { qm.append(el('span', 'ks', 'Tháng có nghỉ phép:')); Object.keys(cnt).forEach(k => { const b = el('button', 'qm', `T${k} (${cnt[k]})`); b.dataset.act = 'goto'; b.dataset.v = k; qm.append(b); }); }
+  const g = $('#grid'); g.replaceChildren();
+  ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].forEach((t, i) => g.append(el('div', 'dow' + (i === 6 ? ' s' : ''), t)));
+  const off = (new Date(y, m, 1).getDay() + 6) % 7, total = Math.ceil((off + new Date(y, m + 1, 0).getDate()) / 7) * 7;
+  const today = ymd(new Date()), by = byDate();
+  for (let i = 0; i < total; i++) {
+    const d = new Date(y, m, 1 - off + i), k = ymd(d), sun = d.getDay() === 0, cur = d.getMonth() === m;
+    const c = el('div', 'cell' + (cur ? '' : ' o') + (k === today ? ' t' : '') + (sun ? ' sn' : '')); c.dataset.date = k;
+    const top = el('div', 'ct'); top.append(el('span', 'dn' + (sun ? ' s' : ''), d.getDate()));
+    const rs = by[k] || [];
+    if (cur && !sun && !rs.length) { const b = el('button', 'q17', '17h'); b.dataset.act = 'q17'; b.dataset.v = k; top.append(b); }
+    c.append(top);
+    rs.filter(r => filter === 'all' || r.type === filter).slice(0, 3).forEach(r => c.append(el('div', 'ev ev-' + r.type, TYPES[r.type].n + (r.type === 'regular' ? '' : ' ' + r.hours + 'h'))));
+    g.append(c);
+  }
+}
+function renderLeave() {
+  const y = view.getFullYear(), p = S.profile || {};
+  $('#lvTitle').textContent = 'Thẻ xin nghỉ năm ' + y;
+  $('#lvSub').textContent = [p.name, p.empId, p.company, p.dept].filter(Boolean).join(' • ') + ` • Quỹ phép ${p.quota != null ? p.quota : 12} ngày`;
+  const b = $('#lvBody'); b.replaceChildren();
+  const rs = S.records.filter(r => r.type === 'leave' && r.date.startsWith(y + '-')).sort((a, c) => a.date.localeCompare(c.date));
+  if (!rs.length) { const tr = el('tr'), td = el('td', 'empty', 'Chưa có ngày nghỉ phép nào trong năm.'); td.colSpan = 5; tr.append(td); b.append(tr); return; }
+  rs.forEach((r, i) => {
+    const tr = el('tr');
+    [i + 1, 'Nghỉ phép năm', `${DOW[pd(r.date).getDay()]}, ${vn(r.date)}`, `${r.start}–${r.end} (${r.hours}h)`].forEach(x => tr.append(el('td', null, x)));
+    const td = el('td'), s = el('button', r.signed ? 'ib ok' : 'ib pend', r.signed ? 'Đã ký' : 'Chờ ký'); s.dataset.act = 'sign'; s.dataset.v = r.id; td.append(s); tr.append(td); b.append(tr);
+  });
+}
+function renderRecs() {
+  const q = $('#search').value.trim().toLowerCase(), b = $('#recBody'); b.replaceChildren();
+  const rs = S.records.filter(r => !q || r.date.includes(q) || r.note.toLowerCase().includes(q)).sort((a, c) => c.date.localeCompare(a.date) || c.start.localeCompare(a.start));
+  if (!rs.length) { const tr = el('tr'), td = el('td', 'empty', 'Không có bản ghi.'); td.colSpan = 7; tr.append(td); b.append(tr); return; }
+  rs.slice(0, 500).forEach(r => {
+    const tr = el('tr');
+    [vn(r.date), TYPES[r.type].n, `${r.start}–${r.end}`, r.hours, r.mult + '%', r.note].forEach(x => tr.append(el('td', null, x)));
+    const td = el('td'); td.style.whiteSpace = 'nowrap';
+    [['edit', 'Sửa'], ['del', 'Xóa']].forEach(([a, t]) => { const x = el('button', 'ib', t); x.dataset.act = a; x.dataset.v = r.id; td.append(x, ' '); });
+    tr.append(td); b.append(tr);
+  });
+  if (rs.length > 500) toast('Chỉ hiển thị 500 bản ghi đầu, hãy dùng ô tìm kiếm.');
+}
+
+/* ---------- Hộp thoại ---------- */
+const openM = id => { $('#m-' + id).classList.add('open'); };
+const closeM = () => document.querySelectorAll('.mb.open').forEach(m => m.classList.remove('open'));
+function applyType(t) { const T = TYPES[t]; $('#fStart').value = T.s; $('#fEnd').value = T.e; $('#fHours').value = T.h; $('#fMult').value = T.m; }
+function openEntry(date, id) {
+  const r = id ? S.records.find(x => x.id === id) : null, d = r ? r.date : date;
+  $('#editId').value = r ? r.id : ''; $('#fDate').value = d;
+  $('#eTitle').textContent = r ? 'Sửa bản ghi' : 'Ghi nhận chấm công';
+  if (r) { $('#fType').value = r.type; $('#fStart').value = r.start; $('#fEnd').value = r.end; $('#fHours').value = r.hours; $('#fMult').value = r.mult; $('#fNote').value = r.note; }
+  else { const t = pd(d).getDay() === 0 ? 'sunday' : 'regular'; $('#fType').value = t; applyType(t); $('#fNote').value = ''; }
+  const ex = $('#exist'); ex.replaceChildren();
+  (byDate()[d] || []).filter(x => !r || x.id !== r.id).forEach(x => {
+    const row = el('div', 'ex'); row.append(el('span', null, `${TYPES[x.type].n} ${x.start}–${x.end} (${x.hours}h)`));
+    const a = el('span'); [['edit', 'Sửa'], ['del', 'Xóa']].forEach(([k, t]) => { const b = el('button', 'ib', t); b.dataset.act = k; b.dataset.v = x.id; a.append(b, ' '); }); row.append(a); ex.append(row);
+  });
+  openM('entry');
+}
+function saveEntry(openG) {
+  const rec = cleanRec({ id: $('#editId').value, type: $('#fType').value, date: $('#fDate').value, start: $('#fStart').value, end: $('#fEnd').value, hours: $('#fHours').value, mult: $('#fMult').value, note: $('#fNote').value });
+  if (!rec) return toast('Ngày hoặc phân loại không hợp lệ');
+  if (!isTime($('#fStart').value) || !isTime($('#fEnd').value)) return toast('Hãy nhập giờ bắt đầu và kết thúc');
+  if (rec.end <= rec.start) return toast('Giờ kết thúc phải sau giờ bắt đầu');
+  const i = S.records.findIndex(x => x.id === rec.id);
+  if (i >= 0) { rec.signed = S.records[i].signed; S.records[i] = rec; } else S.records.push(rec);
+  save(); closeM();
+  const d = pd(rec.date); if (d.getMonth() !== view.getMonth() || d.getFullYear() !== view.getFullYear()) { view = new Date(d.getFullYear(), d.getMonth(), 1); }
+  renderAll(); toast('Đã lưu');
+  if (openG) {
+    const dt = (x, t) => x.replace(/-/g, '') + 'T' + t.replace(':', '') + '00';
+    const u = new URL('https://calendar.google.com/calendar/render');
+    u.searchParams.set('action', 'TEMPLATE'); u.searchParams.set('text', title(rec));
+    u.searchParams.set('dates', dt(rec.date, rec.start) + '/' + dt(rec.date, rec.end)); u.searchParams.set('details', rec.note);
+    window.open(u.toString(), '_blank', 'noopener,noreferrer');
+  }
+}
+function openProfile() {
+  const p = S.profile || {}, first = !S.profile;
+  $('#pName').value = p.name || ''; $('#pId').value = p.empId || ''; $('#pCo').value = p.company || ''; $('#pDep').value = p.dept || ''; $('#pQuota').value = p.quota != null ? p.quota : 12;
+  $('#pClose').classList.toggle('hidden', first); openM('profile');
+}
+function saveProfile() {
+  const p = cleanProfile({ name: $('#pName').value, empId: $('#pId').value, company: $('#pCo').value, dept: $('#pDep').value, quota: $('#pQuota').value });
+  if (!p.name || !p.empId || !p.company) return toast('Hãy điền họ tên, mã nhân viên và công ty');
+  S.profile = p; save(); closeM(); renderAll(); toast('Đã lưu hồ sơ');
+}
+function bulkGo() {
+  const y = view.getFullYear(), m = view.getMonth(), last = new Date(y, m + 1, 0).getDate(), now = new Date(), by = byDate();
+  let end = last; if ($('#bScope').value === 'today') end = (y === now.getFullYear() && m === now.getMonth()) ? now.getDate() : (new Date(y, m, 1) < now ? last : 0);
+  let n = 0; const T = TYPES.regular;
+  for (let d = 1; d <= end; d++) {
+    const dt = new Date(y, m, d), k = ymd(dt);
+    if (dt.getDay() === 0 || (by[k] && by[k].length)) continue;
+    S.records.push({ id: uid(), type: 'regular', date: k, start: T.s, end: T.e, hours: T.h, mult: T.m, note: 'Làm hành chính về 17h', signed: false }); n++;
+  }
+  save(); closeM(); renderAll(); toast(n ? `Đã điền ${n} ngày` : 'Không có ngày trống để điền');
+}
+
+/* ---------- Xuất / nhập ---------- */
+function dl(name, mime, text) {
+  const u = URL.createObjectURL(new Blob([text], { type: mime })), a = document.createElement('a');
+  a.href = u; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+}
+function csv() {
+  const cell = v => { let s = String(v); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; }; // chống chèn công thức Excel
+  const rows = [['Ngày', 'Loại', 'Bắt đầu', 'Kết thúc', 'Số giờ', 'Hệ số %', 'Ghi chú', 'Xác nhận']];
+  [...S.records].sort((a, b) => a.date.localeCompare(b.date)).forEach(r => rows.push([r.date, TYPES[r.type].n, r.start, r.end, r.hours, r.mult, r.note, r.signed ? 'Đã ký' : '']));
+  dl('worklog.csv', 'text/csv;charset=utf-8', '\ufeff' + rows.map(r => r.map(cell).join(',')).join('\r\n'));
+}
+function ics(scope) {
+  const y = view.getFullYear(), pre = scope === 'year' ? y + '-' : `${y}-${pad(view.getMonth() + 1)}-`;
+  const rs = S.records.filter(r => r.date.startsWith(pre));
+  if (!rs.length) return toast('Không có dữ liệu để xuất');
+  const esc = s => String(s).replace(/[\\;,]/g, '\\$&').replace(/\r?\n/g, '\\n');
+  const dt = (d, t) => d.replace(/-/g, '') + 'T' + t.replace(':', '') + '00';
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//WorkLog//VI//EN', 'CALSCALE:GREGORIAN'];
+  rs.forEach(r => L.push('BEGIN:VEVENT', `UID:${r.id}@worklog`, `DTSTAMP:${stamp}`, `DTSTART:${dt(r.date, r.start)}`, `DTEND:${dt(r.date, r.end)}`, 'SUMMARY:' + esc(title(r)), 'DESCRIPTION:' + esc(`${r.mult}% - ${r.note}`), 'END:VEVENT'));
+  L.push('END:VCALENDAR'); dl(`worklog-${scope === 'year' ? y : pre.slice(0, 7)}.ics`, 'text/calendar;charset=utf-8', L.join('\r\n'));
+}
+function importFile(f) {
+  if (!f) return;
+  if (f.size > 5e6) return toast('Tệp quá lớn');
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result), arr = Array.isArray(d) ? d : (d.records || d.entries || []);
+      const rs = arr.map(cleanRec).filter(Boolean);
+      if (!rs.length && !(d && d.profile)) return toast('Tệp không có dữ liệu hợp lệ');
+      if (!confirm(`Gộp ${rs.length} bản ghi vào dữ liệu hiện tại? Bản ghi trùng mã sẽ bị ghi đè.`)) return;
+      rs.forEach(r => { const i = S.records.findIndex(x => x.id === r.id); if (i >= 0) S.records[i] = r; else S.records.push(r); });
+      if (d && d.profile && !S.profile) S.profile = cleanProfile(d.profile);
+      save(); closeM(); renderAll(); toast(`Đã nạp ${rs.length} bản ghi`);
+    } catch (e) { toast('Tệp JSON không hợp lệ'); }
+  };
+  rd.readAsText(f);
+}
+
+/* ---------- Google Calendar API ---------- */
+const GAPI = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+const gstat = (t, bad) => { const s = $('#gStatus'); s.textContent = t; s.style.color = bad ? '#B91C1C' : '#1E3A8A'; };
+function gUI() { $('#gPush').disabled = $('#gPull').disabled = !gToken; }
+function loadGsi() {
+  return new Promise((ok, no) => {
+    if (window.google && google.accounts && google.accounts.oauth2) return ok();
+    const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.onload = ok; s.onerror = () => no(new Error('Không tải được thư viện đăng nhập Google')); document.head.append(s);
+  });
+}
+async function gconnect() {
+  const id = $('#gcid').value.trim();
+  if (!/^[\w-]+(\.[\w-]+)*\.apps\.googleusercontent\.com$/.test(id)) return gstat('Client ID không hợp lệ.', true);
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') return gstat('Cần mở ứng dụng qua https:// để đăng nhập Google.', true);
+  try {
+    await loadGsi();
+    google.accounts.oauth2.initTokenClient({
+      client_id: id, scope: 'https://www.googleapis.com/auth/calendar.events',
+      callback: r => { if (r.error || !r.access_token) { gstat('Đăng nhập thất bại hoặc bị hủy.', true); return; } gToken = r.access_token; gUI(); gstat('Đã kết nối Google Calendar.'); }
+    }).requestAccessToken();
+  } catch (e) { gstat(e.message, true); }
+}
+async function gf(url, opt = {}) {
+  const r = await fetch(url, { ...opt, headers: { Authorization: 'Bearer ' + gToken, 'Content-Type': 'application/json' } });
+  if (r.status === 401) { gToken = null; gUI(); throw new Error('Phiên đăng nhập đã hết hạn, hãy đăng nhập lại.'); }
+  return r;
+}
+async function gpush() {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Ho_Chi_Minh';
+  let ok = 0, bad = 0; gstat('Đang đẩy dữ liệu...');
+  try {
+    for (const r of S.records) {
+      const ev = { id: r.id, summary: title(r), description: `${r.mult}% - ${r.note}`,
+        start: { dateTime: `${r.date}T${r.start}:00`, timeZone: tz }, end: { dateTime: `${r.date}T${r.end}:00`, timeZone: tz },
+        extendedProperties: { private: { wl: '1', wlType: r.type, wlHours: String(r.hours), wlMult: String(r.mult), wlNote: r.note, wlSigned: r.signed ? '1' : '0' } } };
+      let res = await gf(GAPI, { method: 'POST', body: JSON.stringify(ev) });
+      if (res.status === 409) res = await gf(`${GAPI}/${r.id}`, { method: 'PUT', body: JSON.stringify(ev) });
+      res.ok ? ok++ : bad++;
+    }
+    gstat(`Đã đẩy ${ok} bản ghi${bad ? `, lỗi ${bad}` : ''}.`, !!bad);
+  } catch (e) { gstat(e.message, true); }
+}
+async function gpull() {
+  let tok = '', n = 0; gstat('Đang tải dữ liệu...');
+  try {
+    do {
+      const u = new URL(GAPI); u.searchParams.set('privateExtendedProperty', 'wl=1'); u.searchParams.set('maxResults', '250'); u.searchParams.set('singleEvents', 'true');
+      if (tok) u.searchParams.set('pageToken', tok);
+      const res = await gf(u.toString()); if (!res.ok) throw new Error('Google trả về lỗi ' + res.status);
+      const d = await res.json(); tok = d.nextPageToken || '';
+      (d.items || []).forEach(ev => {
+        const p = (ev.extendedProperties || {}).private || {}, s = ev.start && ev.start.dateTime, e = ev.end && ev.end.dateTime;
+        if (!s || !e || ev.status === 'cancelled') return;
+        const r = cleanRec({ id: ev.id, type: p.wlType, date: s.slice(0, 10), start: s.slice(11, 16), end: e.slice(11, 16), hours: p.wlHours, mult: p.wlMult, note: p.wlNote, signed: p.wlSigned === '1' });
+        if (!r || r.id !== ev.id) return;
+        const i = S.records.findIndex(x => x.id === r.id); if (i >= 0) S.records[i] = r; else S.records.push(r); n++;
+      });
+    } while (tok);
+    save(); renderAll(); gstat(`Đã tải ${n} bản ghi từ Google.`);
+  } catch (e) { gstat(e.message, true); }
+}
+function renderEmbed() {
+  const b = $('#embedBox'); b.replaceChildren(); const v = $('#embed').value.trim(); if (!v) return;
+  try {
+    const u = new URL(v);
+    if (u.protocol !== 'https:' || u.hostname !== 'calendar.google.com' || !u.pathname.startsWith('/calendar/embed')) throw 0;
+    const f = document.createElement('iframe'); f.src = u.toString(); f.title = 'Google Calendar'; f.loading = 'lazy'; f.referrerPolicy = 'no-referrer';
+    f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups'); b.append(f);
+  } catch (e) { b.append(el('div', 'empty', 'Liên kết phải bắt đầu bằng https://calendar.google.com/calendar/embed')); }
+}
+
+/* ---------- Điều khiển ---------- */
+function setTab(t) {
+  tab = t; ['calendar', 'leave', 'records', 'gcal'].forEach(k => $('#tab-' + k).classList.toggle('hidden', k !== t));
+  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.v === t));
+  if (t === 'leave') renderLeave(); if (t === 'records') renderRecs(); if (t === 'gcal') { $('#gcid').value = S.gcid; $('#embed').value = S.embed; renderEmbed(); }
+}
+const shift = n => { view = new Date(view.getFullYear(), view.getMonth() + n, 1); renderAll(); };
+const A = {
+  profile: openProfile, saveProfile, close: closeM, add: () => openEntry(ymd(new Date())), save: () => saveEntry(false), saveG: () => saveEntry(true),
+  tab: b => setTab(b.dataset.v), prev: () => shift(-1), next: () => shift(1), today: () => { view = new Date(); view.setDate(1); renderAll(); },
+  hideBanner: () => $('#banner').remove(), filter: b => { filter = b.dataset.v; renderCal(); }, goto: b => { view = new Date(view.getFullYear(), +b.dataset.v - 1, 1); renderAll(); },
+  bulk: () => openM('bulk'), bulkGo, note: b => { $('#fNote').value = b.dataset.v; },
+  q17: b => { const T = TYPES.regular; S.records.push({ id: uid(), type: 'regular', date: b.dataset.v, start: T.s, end: T.e, hours: T.h, mult: T.m, note: 'Làm hành chính về 17h', signed: false }); save(); renderAll(); },
+  edit: b => { closeM(); openEntry(null, b.dataset.v); },
+  del: b => { if (!confirm('Xóa bản ghi này?')) return; S.records = S.records.filter(r => r.id !== b.dataset.v); save(); closeM(); renderAll(); toast('Đã xóa'); },
+  sign: b => { const r = S.records.find(x => x.id === b.dataset.v); if (r) { r.signed = !r.signed; save(); renderLeave(); } },
+  csv, json: () => dl('worklog-backup.json', 'application/json', JSON.stringify({ app: 'worklog', version: 2, profile: S.profile, records: S.records }, null, 1)),
+  import: () => $('#file').click(), ics: b => ics(b.dataset.v), gconnect, gpush, gpull
+};
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('mb')) return closeM();
+  const b = e.target.closest('[data-act]');
+  if (b && A[b.dataset.act]) return A[b.dataset.act](b);
+  const c = e.target.closest('.cell'); if (c) openEntry(c.dataset.date);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.profile) closeM(); });
+$('#fType').addEventListener('change', e => applyType(e.target.value));
+$('#search').addEventListener('input', renderRecs);
+$('#file').addEventListener('change', e => { importFile(e.target.files[0]); e.target.value = ''; });
+$('#gcid').addEventListener('change', e => { S.gcid = str(e.target.value, 200); save(); });
+$('#embed').addEventListener('change', e => { S.embed = str(e.target.value, 600); save(); renderEmbed(); });
+
+load(); renderAll(); if (!S.profile) openProfile();
+</script>
+</body>
+</html>
