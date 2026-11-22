@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0F766E" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="application-name" content="WorkLog & GCal" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230F766E'/%3E%3Crect x='112' y='128' width='288' height='272' rx='36' fill='%23FFFFFF'/%3E%3Crect x='112' y='128' width='288' height='72' rx='24' fill='%23CCFBF1'/%3E%3Cpath d='M218 318l-46-46 22-22 24 24 76-76 22 22z' fill='%230F766E'/%3E%3C/svg%3E" />
+<title>WorkLog &amp; GCal — Lê Bá Thành (qn000272)</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --bg: #F4F6F9;
+    --surface: #FFFFFF;
+    --surface-variant: #EEF2F6;
+    --primary: #0F766E;
+    --primary-dark: #115E59;
+    --primary-soft: #CCFBF1;
+    --text: #0F172A;
+    --text-muted: #475569;
+    --border: #E2E8F0;
+    --leave: #DC2626;
+    --leave-bg: #FEE2E2;
+    --ot: #D97706;
+    --ot-bg: #FEF3C7;
+    --sunday: #7C3AED;
+    --sunday-bg: #EDE9FE;
+    --welfare: #2563EB;
+    --welfare-bg: #DBEAFE;
+    --regular: #0F766E;
+    --regular-bg: #CCFBF1;
+    --radius: 16px;
+    --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+    padding-bottom: 88px;
+  }
+  .app-bar {
+    background: linear-gradient(135deg, #0F766E 0%, #115E59 100%);
+    color: #fff;
+    padding: 14px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: 0 2px 12px rgba(15, 118, 110, 0.25);
+  }
+  .app-bar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .brand p {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    opacity: 0.92;
+  }
+  .emp-chip {
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 12px;
+  }
+  .status-banner {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1E40AF;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  @media (min-width: 768px) {
+    .kpi-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+  .kpi-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .kpi-card.full-span { grid-column: span 2; }
+  @media (min-width: 768px) { .kpi-card.full-span { grid-column: span 1; } }
+  .kpi-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .kpi-val {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .kpi-sub {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .progress-wrap {
+    margin-top: 8px;
+    background: #E2E8F0;
+    height: 7px;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--leave);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+  }
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .cal-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .icon-btn {
+    background: var(--surface-variant);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 7px 11px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .month-title {
+    font-size: 16px;
+    font-weight: 800;
+    min-width: 118px;
+    text-align: center;
+  }
+  .quick-months {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .qm-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; margin-right: 2px; }
+  .qm-btn {
+    border: 1px solid #FECACA;
+    background: #FEF2F2;
+    color: #B91C1C;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .pill {
+    border: 1px solid var(--border);
+    background: var(--surface-variant);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .pill.active {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 13px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-google {
+    background: #1A73E8;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-outline {
+    background: #fff;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-dow {
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--text-muted);
+    padding: 6px 0;
+    background: var(--surface-variant);
+    border-radius: 8px;
+  }
+  .cal-dow.sun { color: var(--leave); background: #FEF2F2; }
+  .cal-cell {
+    min-height: 76px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  @media (min-width: 768px) { .cal-cell { min-height: 94px; padding: 6px; } }
+  .cal-cell.other-month { background: #F8FAFC; opacity: 0.45; }
+  .cal-cell.today { border: 2px solid var(--primary); }
+  .cal-cell.is-sun { background: #FAF5FF; }
+  .cell-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+  }
+  .day-num { font-size: 12px; font-weight: 800; }
+  .day-num.sun { color: var(--leave); }
+  .quick-17h {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--regular);
+    background: var(--regular-bg);
+    border: none;
+    border-radius: 6px;
+    padding: 2px 4px;
+    cursor: pointer;
+  }
+  .ev-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 5px;
+    margin-bottom: 2px;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ev-leave { background: var(--leave-bg); color: var(--leave); }
+  .ev-ot { background: var(--ot-bg); color: #B45309; }
+  .ev-sunday { background: var(--sunday-bg); color: var(--sunday); }
+  .ev-welfare { background: var(--welfare-bg); color: var(--welfare); }
+  .ev-regular { background: var(--regular-bg); color: var(--regular); }
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  th, td {
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  th {
+    background: var(--surface-variant);
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .sync-box {
+    border: 1px solid var(--border);
+    background: var(--surface-variant);
+    border-radius: 14px;
+    padding: 13px;
+    margin-bottom: 12px;
+  }
+  .sync-box h4 {
+    margin: 0 0 6px;
+    font-size: 14.5px;
+  }
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+    padding: 10px;
+  }
+  @media (min-width: 640px) { .modal-backdrop { align-items: center; } }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #fff;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    padding: 18px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.22);
+  }
+  .modal h3 { margin: 0 0 12px; font-size: 17px; }
+  .form-group { margin-bottom: 11px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); }
+  .form-control {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .chip-group { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .note-chip {
+    background: var(--surface-variant);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 11.5px;
+    cursor: pointer;
+  }
+  .modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .fab {
+    position: fixed;
+    right: 16px;
+    bottom: 18px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 13px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 6px 20px rgba(15, 118, 110, 0.38);
+    cursor: pointer;
+    z-index: 50;
+  }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 74px;
+    transform: translateX(-50%);
+    background: #0F172A;
+    color: #fff;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    z-index: 200;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    display: none;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="app-bar">
+  <div class="app-bar-top">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="3"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+          <path d="M9 16l2 2 4-4"></path>
+        </svg>
+      </div>
+      <div>
+        <h1>WorkLog &amp; GCal</h1>
+        <p>EVA Quảng Ninh • Bộ phận Lắp ráp</p>
+      </div>
+    </div>
+    <div class="emp-chip" onclick="editQuota()">Lê Bá Thành • qn000272</div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="status-banner" id="modeBanner">
+    <span id="modeBannerText"></span>
+    <button class="icon-btn" style="padding:3px 8px;font-size:11px;" onclick="document.getElementById('modeBanner').style.display='none'">Ẩn</button>
+  </div>
+
+  <section class="kpi-grid" id="kpiGrid"></section>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="calendar" onclick="switchTab('calendar', this)">Lịch Chấm Công</button>
+    <button class="tab-btn" data-tab="leavecard" onclick="switchTab('leavecard', this)">Thẻ Xin Nghỉ 2026</button>
+    <button class="tab-btn" data-tab="records" onclick="switchTab('records', this)">Chi Tiết &amp; Báo Cáo</button>
+    <button class="tab-btn" data-tab="gcal" onclick="switchTab('gcal', this)">Đồng Bộ Google</button>
+  </nav>
+
+  <section id="tab-calendar" class="card">
+    <div class="cal-header">
+      <div class="month-nav">
+        <button class="icon-btn" onclick="changeMonth(-1)">&#9664;</button>
+        <div class="month-title" id="monthTitle">Tháng 11/2026</div>
+        <button class="icon-btn" onclick="changeMonth(1)">&#9654;</button>
+        <button class="icon-btn" onclick="goToMonth(2026, 10)">T11/2026</button>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-outline" onclick="openBulkModal()">Điền ngày trống (Về 17h)</button>
+      </div>
+    </div>
+
+    <div class="quick-months">
+      <span class="qm-label">Tháng có nghỉ phép 2026:</span>
+      <button class="qm-btn" onclick="goToMonth(2026, 1)">T2 (1d)</button>
+      <button class="qm-btn" onclick="goToMonth(2026, 4)">T5 (2d)</button>
+      <button class="qm-btn" onclick="goToMonth(2026, 6)">T7 (1d)</button>
+      <button class="qm-btn" onclick="goToMonth(2026, 7)">T8 (1d)</button>
+      <button class="qm-btn" onclick="goToMonth(2026, 9)">T10 (1d)</button>
+      <button class="qm-btn" onclick="goToMonth(2026, 10)">T11 (3d)</button>
+    </div>
+
+    <div class="filter-bar">
+      <button class="pill active" onclick="setFilter('all', this)">Tất cả</button>
+      <button class="pill" onclick="setFilter('ot', this)">Tăng ca OT</button>
+      <button class="pill" onclick="setFilter('leave', this)">Nghỉ phép</button>
+      <button class="pill" onclick="setFilter('sunday', this)">Chủ nhật</button>
+      <button class="pill" onclick="setFilter('welfare', this)">Phúc lợi</button>
+      <button class="pill" onclick="setFilter('regular', this)">Về 17h (0h OT)</button>
+    </div>
+
+    <div class="cal-grid" id="calGrid"></div>
+  </section>
+
+  <section id="tab-leavecard" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+      <div>
+        <h3 style="margin:0; font-size:16px;">Thẻ Xin Nghỉ Năm 2026 — EVA Quảng Ninh</h3>
+        <p style="margin:3px 0 0; font-size:12px; color:var(--text-muted);">
+          Họ tên: <strong>Lê Bá Thành</strong> | Số thẻ: <strong>qn000272</strong> | Bộ phận: <strong>Lắp ráp</strong> | Ngày vào: <strong>6/8/2024</strong>
+        </p>
+      </div>
+      <button class="btn-outline" onclick="editQuota()">Sửa quỹ phép (<span id="quotaBadge">12</span> ngày)</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Loại nghỉ</th>
+            <th>Ngày nghỉ</th>
+            <th>Thời gian</th>
+            <th>Nguồn xác nhận</th>
+          </tr>
+        </thead>
+        <tbody id="leaveCardBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-records" class="card hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+      <h3 style="margin:0; font-size:16px;">Bảng Chi Tiết &amp; Xuất Báo Cáo</h3>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-primary" onclick="exportCSV()">Xuất CSV (Excel)</button>
+        <button class="btn-outline" onclick="exportJSON()">Sao lưu JSON</button>
+        <label class="btn-outline" style="cursor:pointer;">
+          Khôi phục JSON
+          <input type="file" accept=".json" style="display:none" onchange="importJSON(event)" />
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <input type="text" id="searchInput" class="form-control" placeholder="Tìm theo ngày (VD: 2026-11) hoặc ghi chú..." oninput="renderRecordsTable()" />
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Loại</th>
+            <th>Khung giờ</th>
+            <th>Số giờ</th>
+            <th>Hệ số</th>
+            <th>Ghi chú</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB 4: GOOGLE ACCOUNT & CALENDAR SYNC -->
+  <section id="tab-gcal" class="card hidden">
+    <h3 style="margin:0 0 10px; font-size:16px;">Đồng Bộ Online Theo Tài Khoản Google</h3>
+
+    <!-- Method A: Direct Google Calendar App (Works Offline/Local Immediately) -->
+    <div class="sync-box">
+      <h4>1. Đồng bộ tức thì qua App Google Calendar trên Android (Không cần cấu hình)</h4>
+      <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 8px;">
+        Khi bạn bấm <strong>"Lưu &amp; Mở Google Calendar"</strong> ở bất kỳ ngày nào, ứng dụng Google Calendar trên điện thoại (đã đăng nhập tài khoản Google của bạn) sẽ tự động mở và lưu sự kiện lên mây Google.
+      </p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-primary" onclick="exportICS('month')">Xuất tệp .ICS Tháng Đang Xem</button>
+        <button class="btn-outline" onclick="exportICS('year')">Xuất tệp .ICS Cả Năm 2026</button>
+      </div>
+    </div>
+
+    <!-- Method B: 2-Way Google Calendar API Sync -->
+    <div class="sync-box" style="background:#EFF6FF; border-color:#BFDBFE;">
+      <h4 style="color:#1E3A8A;">2. Đồng bộ online 2 chiều tự động (Google Calendar API)</h4>
+      <p style="font-size:12.5px; color:#1E40AF; margin:0 0 10px;">
+        Kết nối trực tiếp với tài khoản Google để đẩy toàn bộ dữ liệu chấm công lên Lịch Google (<code>WorkLog EVA</code>) hoặc tải dữ liệu từ Lịch Google về máy mới khi đổi điện thoại. <em>(Yêu cầu mở ứng dụng qua đường dẫn <code>https://</code> như Netlify Drop / GitHub Pages).</em>
+      </p>
+      <div class="form-group">
+        <label style="color:#1E3A8A;">Google OAuth Client ID (Web Application)</label>
+        <input type="text" id="gClientId" class="form-control" placeholder="Dán Client ID (...apps.googleusercontent.com)" oninput="saveGoogleCfg()" />
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <button class="btn-google" onclick="connectGoogleAccount()">Đăng nhập tài khoản Google</button>
+        <button class="btn-primary" id="btnPushGoogle" onclick="pushAllToGoogle()" disabled>Đẩy lên Google Calendar</button>
+        <button class="btn-outline" id="btnPullGoogle" onclick="pullFromGoogle()" disabled>Tải từ Google về máy</button>
+      </div>
+      <div id="googleSyncStatus" style="font-size:12px; color:#1E3A8A; margin-top:8px; font-weight:600;">
+        Trạng thái: Chưa kết nối API (Vẫn dùng được đồng bộ 1-chạm ở mục 1).
+      </div>
+    </div>
+
+    <!-- Method C: Embed Live Google Calendar -->
+    <div class="sync-box">
+      <h4>3. Xem trực tiếp Lịch Google cá nhân ngay trong ứng dụng</h4>
+      <div class="form-group" style="margin-bottom:8px;">
+        <input type="text" id="gEmbedUrl" class="form-control" placeholder="Dán liên kết nhúng Google Calendar (https://calendar.google.com/calendar/embed?src=...)" oninput="saveEmbedUrl()" />
+      </div>
+      <div id="embedContainer"></div>
+    </div>
+  </section>
+</main>
+
+<button class="fab" onclick="openEntryModal(null)">+ Ghi chấm công</button>
+<div class="toast" id="toastBox"></div>
+
+<!-- ENTRY MODAL -->
+<div class="modal-backdrop" id="entryModal">
+  <div class="modal">
+    <h3 id="modalTitle">Ghi Nhận Chấm Công</h3>
+    <div id="existingList" style="margin-bottom:10px;"></div>
+    <input type="hidden" id="editId" />
+    <div class="row-2">
+      <div class="form-group">
+        <label>Ngày</label>
+        <input type="date" id="fDate" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Phân loại</label>
+        <select id="fType" class="form-control" onchange="onTypeChange()">
+          <option value="regular">Hành chính 17h (Không OT)</option>
+          <option value="ot">Tăng ca OT</option>
+          <option value="leave">Nghỉ phép</option>
+          <option value="sunday">Đi làm Chủ nhật</option>
+          <option value="welfare">Đi làm phúc lợi</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="form-group">
+        <label>Giờ bắt đầu</label>
+        <input type="time" id="fStart" class="form-control" value="08:00" />
+      </div>
+      <div class="form-group">
+        <label>Giờ kết thúc</label>
+        <input type="time" id="fEnd" class="form-control" value="17:00" />
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="form-group">
+        <label>Số giờ ghi nhận</label>
+        <input type="number" step="0.5" id="fHours" class="form-control" value="8" />
+      </div>
+      <div class="form-group">
+        <label>Hệ số lương (%)</label>
+        <select id="fMult" class="form-control">
+          <option value="100">100% (Hành chính / Phép)</option>
+          <option value="150">150% (Tăng ca ngày thường)</option>
+          <option value="200">200% (Đi làm Chủ nhật)</option>
+          <option value="300">300% (Lễ / Phúc lợi)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Ghi chú</label>
+      <input type="text" id="fNote" class="form-control" placeholder="Nhập ghi chú..." />
+      <div class="chip-group">
+        <span class="note-chip" onclick="setNote('Làm hành chính về 17h')">Về 17h</span>
+        <span class="note-chip" onclick="setNote('Không tăng ca (tan ca 17:00)')">Không tăng ca</span>
+        <span class="note-chip" onclick="setNote('Tăng ca xưởng Lắp ráp')">Tăng ca Lắp ráp</span>
+        <span class="note-chip" onclick="setNote('Đi làm full')">Đi làm full</span>
+        <span class="note-chip" onclick="setNote('Nghỉ phép năm')">Nghỉ phép năm</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveEntry(false)">Lưu bản ghi</button>
+      <button class="btn-outline" onclick="saveEntry(true)">Lưu &amp; Mở Google Calendar</button>
+      <button class="icon-btn" onclick="closeModal('entryModal')">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK FILL MODAL -->
+<div class="modal-backdrop" id="bulkModal">
+  <div class="modal">
+    <h3>Điền Ngày Trống (Về 17h / Không Tăng Ca)</h3>
+    <p style="font-size:12.5px; color:var(--text-muted); margin-top:0;">
+      Tự động điền các ngày làm việc từ Thứ 2 đến Thứ 7 chưa có dữ liệu trong tháng đang xem (bỏ qua Chủ nhật và ngày đã chấm công).
+    </p>
+    <div class="form-group">
+      <label>Phạm vi điền</label>
+      <select id="bulkScope" class="form-control">
+        <option value="toToday">Từ đầu tháng đến ngày hôm nay (22/11/2026)</option>
+        <option value="fullMonth">Toàn bộ các ngày T2–T7 trống trong tháng</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Nội dung ghi chú</label>
+      <select id="bulkLabel" class="form-control">
+        <option value="Làm hành chính về 17h (Không tăng ca)">Làm hành chính về 17h (Không tăng ca)</option>
+        <option value="Không tăng ca (tan ca 17:00)">Không tăng ca (tan ca 17:00)</option>
+        <option value="Ca hành chính 08:00 - 17:00">Ca hành chính 08:00 - 17:00</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="runBulkFill()">Áp dụng ngay</button>
+      <button class="icon-btn" onclick="closeModal('bulkModal')">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'worklog_eva_qn000272_v1';
+const QUOTA_KEY = 'worklog_eva_quota_2026';
+const GCFG_KEY = 'worklog_eva_gcfg_2026';
+
+const INITIAL_ENTRIES = [
+  { id: 'lv-1', date: '2026-02-27', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 1 - Đã duyệt)', onPaperCard: true, stt: 1 },
+  { id: 'lv-2', date: '2026-05-13', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 5 - Đã duyệt)', onPaperCard: true, stt: 5 },
+  { id: 'lv-3', date: '2026-05-16', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 2 - Đã duyệt)', onPaperCard: true, stt: 2 },
+  { id: 'lv-4', date: '2026-07-18', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 3 - Đã duyệt)', onPaperCard: true, stt: 3 },
+  { id: 'lv-5', date: '2026-08-01', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 4 - Đã duyệt)', onPaperCard: true, stt: 4 },
+  { id: 'lv-6', date: '2026-10-31', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 6 - Đã duyệt)', onPaperCard: true, stt: 6 },
+  { id: 'lv-7', date: '2026-11-05', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 7 - Đã duyệt)', onPaperCard: true, stt: 7 },
+  { id: 'lv-8', date: '2026-11-13', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Phép năm (Thẻ xin nghỉ STT 8 - Đã duyệt)', onPaperCard: true, stt: 8 },
+  { id: 'lv-9', date: '2026-11-20', type: 'leave', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Nghỉ phép (Ngày Nhà giáo VN - Ghi trên lịch điện thoại)', onPaperCard: false, stt: 9 },
+
+  { id: 'sun-1', date: '2026-11-01', type: 'sunday', start: '08:00', end: '17:00', hours: 8, mult: 200, note: 'Đi làm full Chủ nhật' },
+
+  { id: 'ot-02', date: '2026-11-02', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
+  { id: 'ot-03', date: '2026-11-03', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
+  { id: 'ot-04', date: '2026-11-04', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
+  { id: 'ot-09', date: '2026-11-09', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-10', date: '2026-11-10', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-11', date: '2026-11-11', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-12', date: '2026-11-12', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-14', date: '2026-11-14', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-16', date: '2026-11-16', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-17', date: '2026-11-17', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-18', date: '2026-11-18', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-19', date: '2026-11-19', type: 'ot', start: '17:00', end: '18:00', hours: 1, mult: 150, note: 'Tăng ca 1 tiếng' },
+  { id: 'ot-21', date: '2026-11-21', type: 'ot', start: '17:00', end: '19:00', hours: 2, mult: 150, note: 'Tăng ca 2 tiếng' },
+
+  { id: 'reg-06', date: '2026-11-06', type: 'regular', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Làm hành chính về 17h (Không tăng ca)' },
+  { id: 'reg-07', date: '2026-11-07', type: 'regular', start: '08:00', end: '17:00', hours: 8, mult: 100, note: 'Làm hành chính về 17h (Không tăng ca)' }
+];
+
+let entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || INITIAL_ENTRIES;
+let annualQuota = Number(localStorage.getItem(QUOTA_KEY) || 12);
+let gCfg = JSON.parse(localStorage.getItem(GCFG_KEY) || '{"clientId":"","embedUrl":""}');
+let googleAccessToken = null;
+let viewYear = 2026;
+let viewMonth = 10;
+let activeFilter = 'all';
+
+const TYPE_META = {
+  leave:   { label: 'Nghỉ phép',      tag: '[Nghỉ phép]',      cls: 'ev-leave' },
+  ot:      { label: 'Tăng ca OT',     tag: '[Tăng ca OT]',     cls: 'ev-ot' },
+  sunday:  { label: 'Chủ nhật',       tag: '[Chủ nhật]',       cls: 'ev-sunday' },
+  welfare: { label: 'Phúc lợi',       tag: '[Phúc lợi]',       cls: 'ev-welfare' },
+  regular: { label: 'Hành chính 17h', tag: '[Hành chính 17h]', cls: 'ev-regular' }
+};
+
+function initEnvironmentBanner() {
+  const banner = document.getElementById('modeBannerText');
+  if (location.protocol === 'content:' || location.protocol === 'file:') {
+    banner.innerHTML = '<strong>Đang mở từ tệp tải về:</strong> Chrome ẩn nút <em>Thêm vào màn hình chính</em> với tệp nội bộ. Hãy bấm <strong>&#8942; &rarr; Dấu trang (&#9733;)</strong> để ghim tiện ích ra màn hình chính, hoặc mở qua link <code>https://</code>.';
+  } else {
+    banner.innerHTML = '<strong>Chế độ Web App (HTTPS):</strong> Bạn có thể bấm <strong>&#8942; &rarr; Cài đặt ứng dụng / Thêm vào màn hình chính</strong> và kết nối tài khoản Google ở tab <em>Đồng Bộ Google</em>.';
+  }
+  document.getElementById('gClientId').value = gCfg.clientId || '';
+  document.getElementById('gEmbedUrl').value = gCfg.embedUrl || '';
+  renderEmbedIframe();
+}
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(QUOTA_KEY, String(annualQuota));
+}
+
+function renderAll() {
+  renderKPI();
+  renderCalendar();
+  renderLeaveCard();
+  renderRecordsTable();
+}
+
+function renderKPI() {
+  const ym = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
+  const yearStr = `${viewYear}-`;
+
+  const yearLeaves = entries.filter(e => e.type === 'leave' && e.date.startsWith(yearStr));
+  const usedLeaveDays = yearLeaves.reduce((s, e) => s + (e.hours / 8), 0);
+  const remainLeave = Math.max(0, annualQuota - usedLeaveDays);
+  const pct = Math.min(100, Math.round((usedLeaveDays / Math.max(1, annualQuota)) * 100));
+
+  const monthOT = entries.filter(e => e.type === 'ot' && e.date.startsWith(ym));
+  const otHours = monthOT.reduce((s, e) => s + Number(e.hours), 0);
+  const otWeighted = monthOT.reduce((s, e) => s + Number(e.hours) * (Number(e.mult) / 100), 0);
+
+  const monthSun = entries.filter(e => e.type === 'sunday' && e.date.startsWith(ym));
+  const sunDays = monthSun.reduce((s, e) => s + (e.hours / 8), 0);
+  const sunHours = monthSun.reduce((s, e) => s + Number(e.hours), 0);
+
+  const monthWel = entries.filter(e => e.type === 'welfare' && e.date.startsWith(ym));
+  const welDays = monthWel.reduce((s, e) => s + (e.hours / 8), 0);
+
+  const monthReg = entries.filter(e => e.type === 'regular' && e.date.startsWith(ym));
+  const regDays = monthReg.length;
+  const regHours = monthReg.reduce((s, e) => s + Number(e.hours), 0);
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card full-span">
+      <span class="kpi-badge" style="background:var(--leave-bg); color:var(--leave);">Phép Tồn ${viewYear}</span>
+      <div class="kpi-val" style="color:var(--leave);">${remainLeave} <span style="font-size:13px;font-weight:600;">/ ${annualQuota} ngày</span></div>
+      <div class="kpi-sub">Đã nghỉ ${usedLeaveDays} ngày (8 trên thẻ + 1 lịch ĐT)</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-badge" style="background:var(--ot-bg); color:#B45309;">Tăng ca T${viewMonth+1}</span>
+      <div class="kpi-val" style="color:#B45309;">${otHours}h</div>
+      <div class="kpi-sub">Quy đổi 150%: <strong>${otWeighted}h</strong> (${monthOT.length} buổi)</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-badge" style="background:var(--sunday-bg); color:var(--sunday);">Chủ nhật T${viewMonth+1}</span>
+      <div class="kpi-val" style="color:var(--sunday);">${sunDays} ngày</div>
+      <div class="kpi-sub">${sunHours}h thực tế (x200% = ${sunHours*2}h)</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-badge" style="background:var(--welfare-bg); color:var(--welfare);">Phúc lợi T${viewMonth+1}</span>
+      <div class="kpi-val" style="color:var(--welfare);">${welDays} ngày</div>
+      <div class="kpi-sub">Ca lễ / phúc lợi công ty</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-badge" style="background:var(--regular-bg); color:var(--regular);">Về 17h (0h OT)</span>
+      <div class="kpi-val" style="color:var(--regular);">${regDays} ngày</div>
+      <div class="kpi-sub">${regHours}h hành chính chuẩn</div>
+    </div>
+  `;
+}
+
+function renderCalendar() {
+  document.getElementById('monthTitle').textContent = `Tháng ${viewMonth + 1}/${viewYear}`;
+  const grid = document.getElementById('calGrid');
+  const dows = ['T.2', 'T.3', 'T.4', 'T.5', 'T.6', 'T.7', 'CN'];
+  let html = dows.map((d, i) => `<div class="cal-dow ${i === 6 ? 'sun' : ''}">${d}</div>`).join('');
+
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
+  const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+
+  for (let i = 0; i < totalCells; i++) {
+    let dayNum, m = viewMonth, y = viewYear, isOther = false;
+    if (i < startDow) {
+      dayNum = prevMonthDays - startDow + i + 1;
+      m = viewMonth - 1;
+      if (m < 0) { m = 11; y--; }
+      isOther = true;
+    } else if (i >= startDow + daysInMonth) {
+      dayNum = i - startDow - daysInMonth + 1;
+      m = viewMonth + 1;
+      if (m > 11) { m = 0; y++; }
+      isOther = true;
+    } else {
+      dayNum = i - startDow + 1;
+    }
+
+    const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+    const dow = i % 7;
+    const isToday = dateStr === '2026-11-22';
+
+    const dayEntries = entries.filter(e => e.date === dateStr && (activeFilter === 'all' || e.type === activeFilter));
+    const hasAnyEntry = entries.some(e => e.date === dateStr);
+
+    const tagsHtml = dayEntries.map(e => {
+      const meta = TYPE_META[e.type];
+      let shortTxt = meta.label;
+      if (e.type === 'ot') shortTxt = `OT +${e.hours}h`;
+      else if (e.type === 'regular') shortTxt = `Về 17h`;
+      else if (e.type === 'sunday') shortTxt = `CN Full`;
+      else if (e.type === 'leave') shortTxt = `Nghỉ phép`;
+      return `<div class="ev-tag ${meta.cls}">${shortTxt}</div>`;
+    }).join('');
+
+    const quickBtn = (!isOther && dow !== 6 && !hasAnyEntry)
+      ? `<button class="quick-17h" onclick="event.stopPropagation(); quickAdd17h('${dateStr}')">+17h</button>`
+      : '';
+
+    html += `
+      <div class="cal-cell ${isOther ? 'other-month' : ''} ${dow === 6 ? 'is-sun' : ''} ${isToday ? 'today' : ''}" onclick="openEntryModal('${dateStr}')">
+        <div class="cell-top">
+          <span class="day-num ${dow === 6 ? 'sun' : ''}">${dayNum}</span>
+          ${quickBtn}
+        </div>
+        <div>${tagsHtml}</div>
+      </div>
+    `;
+  }
+  grid.innerHTML = html;
+}
+
+function quickAdd17h(dateStr) {
+  entries.push({
+    id: 'reg-' + Date.now(),
+    date: dateStr,
+    type: 'regular',
+    start: '08:00',
+    end: '17:00',
+    hours: 8,
+    mult: 100,
+    note: 'Làm hành chính về 17h (Không tăng ca)'
+  });
+  persist();
+  renderAll();
+  notify(`Đã ghi nhận ${formatVNDate(dateStr)}: Về 17h`);
+}
+
+function renderLeaveCard() {
+  document.getElementById('quotaBadge').textContent = annualQuota;
+  const leaves = entries
+    .filter(e => e.type === 'leave' && e.date.startsWith('2026-'))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const tbody = document.getElementById('leaveCardBody');
+  tbody.innerHTML = leaves.map((e, idx) => `
+    <tr>
+      <td><strong>${idx + 1}</strong></td>
+      <td><span class="ev-tag ev-leave" style="display:inline-block;">Phép năm</span></td>
+      <td><strong>${formatVNDate(e.date)}</strong></td>
+      <td>1 ngày (${e.hours} giờ) • ${e.start}–${e.end}</td>
+      <td>${e.onPaperCard !== false ? '<span style="color:#0F766E;font-weight:700;">&#10003; Đã ký trên thẻ giấy</span>' : '<span style="color:#D97706;font-weight:700;">&#9998; Ghi trên lịch ĐT (chưa lên thẻ)</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderRecordsTable() {
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const list = entries
+    .filter(e => e.date.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || TYPE_META[e.type].label.toLowerCase().includes(q))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  document.getElementById('recordsBody').innerHTML = list.map(e => {
+    const m = TYPE_META[e.type];
+    return `
+      <tr>
+        <td><strong>${formatVNDate(e.date)}</strong></td>
+        <td><span class="ev-tag ${m.cls}" style="display:inline-block;">${m.label}</span></td>
+        <td>${e.start} - ${e.end}</td>
+        <td>${e.hours}h</td>
+        <td>${e.mult}%</td>
+        <td>${e.note || ''}</td>
+        <td>
+          <button class="icon-btn" style="padding:4px 8px;font-size:11px;" onclick="editEntry('${e.id}')">Sửa</button>
+          <button class="icon-btn" style="padding:4px 8px;font-size:11px;color:#DC2626;" onclick="deleteEntry('${e.id}')">Xóa</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openEntryModal(dateStr) {
+  const targetDate = dateStr || `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-22`;
+  document.getElementById('editId').value = '';
+  document.getElementById('fDate').value = targetDate;
+  document.getElementById('fType').value = 'regular';
+  onTypeChange();
+  document.getElementById('modalTitle').textContent = `Chấm công ngày ${formatVNDate(targetDate)}`;
+
+  const dayItems = entries.filter(e => e.date === targetDate);
+  const box = document.getElementById('existingList');
+  if (dayItems.length) {
+    box.innerHTML = `<div style="font-size:12px;font-weight:700;margin-bottom:4px;">Đã ghi trong ngày này:</div>` +
+      dayItems.map(item => `
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface-variant);padding:6px 10px;border-radius:8px;margin-bottom:4px;font-size:12px;">
+          <span><strong>${TYPE_META[item.type].label}</strong> (${item.hours}h) — ${item.note}</span>
+          <span>
+            <button class="icon-btn" style="padding:3px 7px;font-size:11px;" onclick="editEntry('${item.id}')">Sửa</button>
+            <button class="icon-btn" style="padding:3px 7px;font-size:11px;color:#DC2626;" onclick="deleteEntry('${item.id}')">Xóa</button>
+          </span>
+        </div>
+      `).join('');
+  } else {
+    box.innerHTML = '';
+  }
+
+  document.getElementById('entryModal').classList.add('open');
+}
+
+function editEntry(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById('editId').value = e.id;
+  document.getElementById('fDate').value = e.date;
+  document.getElementById('fType').value = e.type;
+  document.getElementById('fStart').value = e.start;
+  document.getElementById('fEnd').value = e.end;
+  document.getElementById('fHours').value = e.hours;
+  document.getElementById('fMult').value = String(e.mult);
+  document.getElementById('fNote').value = e.note || '';
+  document.getElementById('modalTitle').textContent = `Chỉnh sửa ngày ${formatVNDate(e.date)}`;
+  document.getElementById('entryModal').classList.add('open');
+}
+
+function deleteEntry(id) {
+  entries = entries.filter(x => x.id !== id);
+  persist();
+  renderAll();
+  closeModal('entryModal');
+  notify('Đã xóa bản ghi');
+}
+
+function onTypeChange() {
+  const t = document.getElementById('fType').value;
+  if (t === 'regular') {
+    document.getElementById('fStart').value = '08:00';
+    document.getElementById('fEnd').value = '17:00';
+    document.getElementById('fHours').value = 8;
+    document.getElementById('fMult').value = '100';
+    document.getElementById('fNote').value = 'Làm hành chính về 17h (Không tăng ca)';
+  } else if (t === 'ot') {
+    document.getElementById('fStart').value = '17:00';
+    document.getElementById('fEnd').value = '19:00';
+    document.getElementById('fHours').value = 2;
+    document.getElementById('fMult').value = '150';
+    document.getElementById('fNote').value = 'Tăng ca 2 tiếng';
+  } else if (t === 'leave') {
+    document.getElementById('fStart').value = '08:00';
+    document.getElementById('fEnd').value = '17:00';
+    document.getElementById('fHours').value = 8;
+    document.getElementById('fMult').value = '100';
+    document.getElementById('fNote').value = 'Nghỉ phép năm';
+  } else if (t === 'sunday') {
+    document.getElementById('fStart').value = '08:00';
+    document.getElementById('fEnd').value = '17:00';
+    document.getElementById('fHours').value = 8;
+    document.getElementById('fMult').value = '200';
+    document.getElementById('fNote').value = 'Đi làm full Chủ nhật';
+  } else if (t === 'welfare') {
+    document.getElementById('fStart').value = '08:00';
+    document.getElementById('fEnd').value = '17:00';
+    document.getElementById('fHours').value = 8;
+    document.getElementById('fMult').value = '300';
+    document.getElementById('fNote').value = 'Đi làm phúc lợi';
+  }
+}
+
+function setNote(txt) {
+  document.getElementById('fNote').value = txt;
+}
+
+function saveEntry(openGCal) {
+  const id = document.getElementById('editId').value;
+  const date = document.getElementById('fDate').value;
+  const type = document.getElementById('fType').value;
+  const start = document.getElementById('fStart').value || '08:00';
+  const end = document.getElementById('fEnd').value || '17:00';
+  const hours = parseFloat(document.getElementById('fHours').value) || 0;
+  const mult = parseInt(document.getElementById('fMult').value, 10) || 100;
+  const note = document.getElementById('fNote').value.trim();
+
+  if (!date) return;
+
+  const payload = { id: id || ('rec-' + Date.now()), date, type, start, end, hours, mult, note };
+  if (id) {
+    const idx = entries.findIndex(x => x.id === id);
+    if (idx >= 0) entries[idx] = { ...entries[idx], ...payload };
+  } else {
+    entries.push(payload);
+  }
+
+  persist();
+  renderAll();
+  closeModal('entryModal');
+  notify('Đã lưu chấm công');
+
+  if (googleAccessToken) {
+    pushSingleEventToGoogle(payload).catch(() => {});
+  }
+
+  if (openGCal) {
+    const gcalUrl = buildGoogleCalendarUrl(payload);
+    if (window.AndroidBridge && window.AndroidBridge.openGoogleCalendar) {
+      window.AndroidBridge.openGoogleCalendar(gcalUrl);
+    } else {
+      window.open(gcalUrl, '_blank');
+    }
+  }
+}
+
+function buildGoogleCalendarUrl(e) {
+  const dClean = e.date.replace(/-/g, '');
+  const sClean = e.start.replace(':', '') + '00';
+  const eClean = e.end.replace(':', '') + '00';
+  const title = `${TYPE_META[e.type].tag} ${e.note || TYPE_META[e.type].label} (${e.hours}h)`;
+  const details = `Nhân viên: Lê Bá Thành (qn000272 - EVA Quảng Ninh)\nPhân loại: ${TYPE_META[e.type].label}\nSố giờ: ${e.hours}h (Hệ số ${e.mult}%)\nGhi chú: ${e.note || ''}`;
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dClean}T${sClean}/${dClean}T${eClean}&details=${encodeURIComponent(details)}&ctz=Asia/Ho_Chi_Minh`;
+}
+
+// --- GOOGLE ACCOUNT OAUTH 2.0 2-WAY SYNC ---
+function saveGoogleCfg() {
+  gCfg.clientId = document.getElementById('gClientId').value.trim();
+  localStorage.setItem(GCFG_KEY, JSON.stringify(gCfg));
+}
+
+function saveEmbedUrl() {
+  gCfg.embedUrl = document.getElementById('gEmbedUrl').value.trim();
+  localStorage.setItem(GCFG_KEY, JSON.stringify(gCfg));
+  renderEmbedIframe();
+}
+
+function renderEmbedIframe() {
+  const box = document.getElementById('embedContainer');
+  if (gCfg.embedUrl && gCfg.embedUrl.startsWith('https://calendar.google.com/')) {
+    box.innerHTML = `<iframe src="${gCfg.embedUrl}" style="border:0;width:100%;height:380px;border-radius:12px;" frameborder="0" scrolling="no"></iframe>`;
+  } else {
+    box.innerHTML = '';
+  }
+}
+
+function connectGoogleAccount() {
+  if (!gCfg.clientId) {
+    alert('Vui lòng nhập Google OAuth Client ID trước khi đăng nhập.');
+    return;
+  }
+  if (!window.google || !google.accounts || !google.accounts.oauth2) {
+    alert('Không tải được thư viện Google Sign-In. Hãy đảm bảo bạn có Internet và đang mở trang qua https://.');
+    return;
+  }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: gCfg.clientId,
+    scope: 'https://www.googleapis.com/auth/calendar.events',
+    callback: (resp) => {
+      if (resp && resp.access_token) {
+        googleAccessToken = resp.access_token;
+        document.getElementById('btnPushGoogle').disabled = false;
+        document.getElementById('btnPullGoogle').disabled = false;
+        document.getElementById('googleSyncStatus').textContent = 'Trạng thái: Đã đăng nhập Google thành công! Sẵn sàng đồng bộ 2 chiều.';
+        notify('Đã kết nối tài khoản Google');
+      }
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function pushSingleEventToGoogle(e) {
+  if (!googleAccessToken) return;
+  const eventBody = {
+    summary: `${TYPE_META[e.type].tag} ${e.note || TYPE_META[e.type].label} (${e.hours}h)`,
+    description: `[WORKLOG_ID:${e.id}|TYPE:${e.type}|HOURS:${e.hours}|MULT:${e.mult}] NV: Lê Bá Thành (qn000272 - EVA Quảng Ninh)`,
+    start: { dateTime: `${e.date}T${e.start}:00+07:00`, timeZone: 'Asia/Ho_Chi_Minh' },
+    end:   { dateTime: `${e.date}T${e.end}:00+07:00`,   timeZone: 'Asia/Ho_Chi_Minh' }
+  };
+  await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${googleAccessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(eventBody)
+  });
+}
+
+async function pushAllToGoogle() {
+  if (!googleAccessToken) return;
+  const st = document.getElementById('googleSyncStatus');
+  st.textContent = `Đang đẩy ${entries.length} bản ghi lên Google Calendar...`;
+  let ok = 0;
+  for (const e of entries) {
+    try {
+      await pushSingleEventToGoogle(e);
+      ok++;
+    } catch (_) {}
+  }
+  st.textContent = `Đã đồng bộ xong ${ok}/${entries.length} bản ghi lên tài khoản Google của bạn!`;
+  notify(`Đã đẩy ${ok} sự kiện lên Google`);
+}
+
+async function pullFromGoogle() {
+  if (!googleAccessToken) return;
+  const st = document.getElementById('googleSyncStatus');
+  st.textContent = 'Đang tải dữ liệu từ Google Calendar về máy...';
+  try {
+    const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?q=WORKLOG_ID&maxResults=500', {
+      headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+    });
+    const data = await res.json();
+    const items = data.items || [];
+    let imported = 0;
+    items.forEach(ev => {
+      const desc = ev.description || '';
+      const m = desc.match(/\[WORKLOG_ID:([^|]+)\|TYPE:([^|]+)\|HOURS:([^|]+)\|MULT:([^\]]+)\]/);
+      if (m && ev.start && ev.start.dateTime) {
+        const id = m[1];
+        if (!entries.some(x => x.id === id)) {
+          const dtStart = ev.start.dateTime;
+          const dtEnd = ev.end?.dateTime || dtStart;
+          entries.push({
+            id,
+            date: dtStart.slice(0, 10),
+            type: m[2],
+            start: dtStart.slice(11, 16),
+            end: dtEnd.slice(11, 16),
+            hours: parseFloat(m[3]) || 8,
+            mult: parseInt(m[4], 10) || 100,
+            note: (ev.summary || '').replace(/^\[[^\]]+\]\s*/, '')
+          });
+          imported++;
+        }
+      }
+    });
+    persist();
+    renderAll();
+    st.textContent = `Hoàn tất! Đã khôi phục thêm ${imported} bản ghi từ Google Calendar.`;
+    notify(`Đã tải ${imported} bản ghi từ Google`);
+  } catch (err) {
+    st.textContent = 'Lỗi khi tải dữ liệu từ Google Calendar.';
+  }
+}
+
+function openBulkModal() {
+  document.getElementById('bulkModal').classList.add('open');
+}
+
+function runBulkFill() {
+  const scope = document.getElementById('bulkScope').value;
+  const label = document.getElementById('bulkLabel').value;
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  let added = 0;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(viewYear, viewMonth, d);
+    const dow = dt.getDay();
+    if (dow === 0) continue;
+    const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (scope === 'toToday' && dateStr > '2026-11-22') continue;
+    if (!entries.some(e => e.date === dateStr)) {
+      entries.push({
+        id: `reg-bulk-${dateStr}-${Math.random().toString(36).slice(2,6)}`,
+        date: dateStr,
+        type: 'regular',
+        start: '08:00',
+        end: '17:00',
+        hours: 8,
+        mult: 100,
+        note: label
+      });
+      added++;
+    }
+  }
+  persist();
+  renderAll();
+  closeModal('bulkModal');
+  notify(`Đã điền ${added} ngày hành chính về 17h`);
+}
+
+function editQuota() {
+  const val = prompt('Nhập tổng quỹ phép năm 2026 (ngày):', String(annualQuota));
+  if (val !== null && !isNaN(Number(val)) && Number(val) >= 0) {
+    annualQuota = Number(val);
+    persist();
+    renderAll();
+  }
+}
+
+function changeMonth(delta) {
+  viewMonth += delta;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  renderAll();
+}
+
+function goToMonth(y, m) {
+  viewYear = y;
+  viewMonth = m;
+  renderAll();
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderCalendar();
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['calendar', 'leavecard', 'records', 'gcal'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+  });
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+window.closeTopModal = function() {
+  for (const id of ['entryModal', 'bulkModal']) {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('open')) {
+      el.classList.remove('open');
+      return true;
+    }
+  }
+  return false;
+};
+
+function formatVNDate(iso) {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function deliverFile(fileName, mimeType, content) {
+  if (window.AndroidBridge && window.AndroidBridge.saveOrShareFile) {
+    window.AndroidBridge.saveOrShareFile(fileName, mimeType, content);
+    return;
+  }
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV() {
+  const header = '\uFEFFNgày,Phân loại,Giờ bắt đầu,Giờ kết thúc,Số giờ,Hệ số (%),Ghi chú\n';
+  const rows = [...entries]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map(e => `"${formatVNDate(e.date)}","${TYPE_META[e.type].label}","${e.start}","${e.end}",${e.hours},${e.mult},"${(e.note || '').replace(/"/g, '""')}"`)
+    .join('\n');
+  deliverFile('ChamCong_LeBaThanh_qn000272.csv', 'text/csv;charset=utf-8', header + rows);
+}
+
+function exportICS(scope) {
+  const ym = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
+  const list = scope === 'month'
+    ? entries.filter(e => e.date.startsWith(ym))
+    : entries.filter(e => e.date.startsWith(`${viewYear}-`));
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//EVA Quang Ninh//WorkLog GCal//VI',
+    'CALSCALE:GREGORIAN'
+  ];
+  list.forEach(e => {
+    const dClean = e.date.replace(/-/g, '');
+    const sClean = e.start.replace(':', '') + '00';
+    const eClean = e.end.replace(':', '') + '00';
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${e.id}@worklog-eva-qn000272`,
+      `DTSTART;TZID=Asia/Ho_Chi_Minh:${dClean}T${sClean}`,
+      `DTEND;TZID=Asia/Ho_Chi_Minh:${dClean}T${eClean}`,
+      `SUMMARY:${TYPE_META[e.type].tag} ${e.note || TYPE_META[e.type].label} (${e.hours}h)`,
+      `DESCRIPTION:NV: Le Ba Thanh (qn000272) - He so ${e.mult}%`,
+      'END:VEVENT'
+    );
+  });
+  lines.push('END:VCALENDAR');
+  const fname = scope === 'month' ? `WorkLog_${ym}.ics` : `WorkLog_${viewYear}.ics`;
+  deliverFile(fname, 'text/calendar;charset=utf-8', lines.join('\r\n'));
+}
+
+function exportJSON() {
+  const data = JSON.stringify({ employee: 'Lê Bá Thành (qn000272)', annualQuota, entries }, null, 2);
+  deliverFile('WorkLog_Backup_qn000272.json', 'application/json', data);
+}
+
+function importJSON(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (Array.isArray(parsed.entries)) {
+        entries = parsed.entries;
+        if (parsed.annualQuota) annualQuota = Number(parsed.annualQuota);
+        persist();
+        renderAll();
+        notify('Khôi phục dữ liệu thành công');
+      }
+    } catch (e) {
+      alert('Tệp JSON không hợp lệ');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function notify(msg) {
+  if (window.AndroidBridge && window.AndroidBridge.showToast) {
+    window.AndroidBridge.showToast(msg);
+  }
+  const box = document.getElementById('toastBox');
+  if (box) {
+    box.textContent = msg;
+    box.style.display = 'block';
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => { box.style.display = 'none'; }, 2200);
+  }
+}
+
+initEnvironmentBanner();
+renderAll();
+</script>
+</body>
+</html>
